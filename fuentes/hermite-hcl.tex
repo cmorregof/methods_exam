@@ -1,14 +1,12 @@
 \input{preambulo_examen}
 \newcommand{\docpie}{Parcial 1 · Los dos Hermite}
 \begin{document}
-\cabecera{Los dos Hermite}{Polinomios osculantes, cuadratura de Gauss–Hermite y la molécula de HCl}{Métodos Numéricos · UNAL Manizales · parcial para la casa · 50 puntos · entrega y sustentación: martes 20 de octubre de 2026}
+\cabecera{Los dos Hermite}{Polinomios osculantes, cuadratura de Gauss–Hermite y la molécula de HCl}{Entrega y sustentación: martes 20 de octubre de 2026 · Prof. Carlos Orrego}
 En física, ``Hermite'' casi siempre quiere decir los polinomios Hₙ del oscilador armónico (H₀ = 1, H₁ = 2x, H₂ = 4x² − 2, \ldots). En este curso, ``Hermite'' es el polinomio osculante, el que copia valores y derivadas. Tienen el mismo apellido pero son objetos distintos, y en este parcial vas a ver que se necesitan el uno al otro: \textbf{la regla de cuadratura de Gauss--Hermite, que usan químicos y físicos para calcular valores esperados en el oscilador, se demuestra con el osculante}. Después la vas a usar en una molécula real, el cloruro de hidrógeno (HCl), cuyas constantes vibracionales medidas vienen de la tabla de NIST.
 
 \section{Reglas del parcial}
 
 Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
-
-\textbf{Nombre:} \hueco{38} \textbf{Documento:} \hueco{16}
 
 \begin{itemize}
 \tightlist
@@ -35,7 +33,7 @@ Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano 
 \item
   (H1) Hₙ tiene n raíces reales y distintas x₁ \textless{} x₂ \textless{} \ldots{} \textless{} xₙ, y su coeficiente principal es 2ⁿ.
 \item
-  (H2) Ortogonalidad: si p es un polinomio de grado \textbf{menor que n}, entonces ∫ e\textsuperscript{−x²} Hₙ(x) p(x) dx = 0 (las integrales van de −∞ a ∞).
+  (H2) Ortogonalidad: si p es un polinomio de grado \textbf{menor que n}, entonces \ensuremath{\int} e\textsuperscript{−x²} Hₙ(x) p(x) dx = 0 (las integrales van de −∞ a ∞).
 \item
   (H3) Osculante (forma de Burden, vista en clase). Sean Lⱼ los polinomios de Lagrange en los nodos x₁, \ldots, xₙ. El único polinomio de grado ≤ 2n − 1 con H(xⱼ) = f(xⱼ) y H′(xⱼ) = f′(xⱼ) es
 \end{itemize}
@@ -47,7 +45,7 @@ Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano 
 \begin{itemize}
 \tightlist
 \item
-  (H4) Valor medio para integrales: si u(x) ≥ 0 y φ es continua, entonces ∫ φ(x) u(x) dx = φ(η) ∫ u(x) dx para algún η.
+  (H4) Valor medio para integrales: si u(x) ≥ 0 y φ es continua, entonces \ensuremath{\int} φ(x) u(x) dx = φ(η) \ensuremath{\int} u(x) dx para algún η.
 \end{itemize}
 
 \textbf{Teorema (Gauss--Hermite).} Sean x₁, \ldots, xₙ las raíces de Hₙ. Para todo polinomio f de grado ≤ 2n − 1,
@@ -76,24 +74,24 @@ q′(xⱼ) = Lⱼ(xⱼ) + (xⱼ − xⱼ) Lⱼ′(xⱼ) = \hueco{8}, y por tanto
 
 por el hecho (H\hueco{4}), porque el grado de Lⱼ es \hueco{8}, que es menor que n.
 
-\textbf{Paso 4.} Como Hⱼ = Lⱼ² − 2Lⱼ′(xⱼ)(x − xⱼ)Lⱼ², se tiene Aⱼ = ∫ e\textsuperscript{−x²} Lⱼ² dx − 2Lⱼ′(xⱼ) · \hueco{8} = wⱼ. Además wⱼ \textgreater{} 0 porque \hueco{40}.
+\textbf{Paso 4.} Como Hⱼ = Lⱼ² − 2Lⱼ′(xⱼ)(x − xⱼ)Lⱼ², se tiene Aⱼ = \ensuremath{\int} e\textsuperscript{−x²} Lⱼ² dx − 2Lⱼ′(xⱼ) · \hueco{8} = wⱼ. Además wⱼ \textgreater{} 0 porque \hueco{40}.
 
-\textbf{Paso 5 (exactitud).} Si f es un polinomio de grado ≤ 2n − 1, entonces H = f por \hueco{24} (cita H3). Por tanto ∫ e\textsuperscript{−x²} f dx = ∫ e\textsuperscript{−x²} H dx = Σ wⱼ f(xⱼ). \textbf{Las derivadas f′(xⱼ) desaparecieron: la regla solo necesita valores.}
+\textbf{Paso 5 (exactitud).} Si f es un polinomio de grado ≤ 2n − 1, entonces H = f por \hueco{24} (cita H3). Por tanto \ensuremath{\int} e\textsuperscript{−x²} f dx = \ensuremath{\int} e\textsuperscript{−x²} H dx = Σ wⱼ f(xⱼ). \textbf{Las derivadas f′(xⱼ) desaparecieron: la regla solo necesita valores.}
 
-\textbf{Paso 6 (error).} Restando, ∫ e\textsuperscript{−x²}(f − H) dx = ∫ {[}f\textsuperscript{(2n)}(ξ(x))/(2n)!{]} · e\textsuperscript{−x²} ∏(x − xₖ)² dx. Como la función \hueco{24} es ≥ 0, el hecho (H\hueco{4}) da el error del teorema.
+\textbf{Paso 6 (error).} Restando, \ensuremath{\int} e\textsuperscript{−x²}(f − H) dx = \ensuremath{\int} {[}f\textsuperscript{(2n)}(ξ(x))/(2n)!{]} · e\textsuperscript{−x²} \ensuremath{\prod}(x − xₖ)² dx. Como la función \hueco{24} es ≥ 0, el hecho (H\hueco{4}) da el error del teorema.
 
-\textbf{Remate.} Por (H1), ∏(x − xₖ) = Hₙ(x) / \hueco{8}. Usando el dato ∫ e\textsuperscript{−x²} Hₙ(x)² dx = 2ⁿ n! √π, el error queda
+\textbf{Remate.} Por (H1), \ensuremath{\prod}(x − xₖ) = Hₙ(x) / \hueco{8}. Usando el dato \ensuremath{\int} e\textsuperscript{−x²} Hₙ(x)² dx = 2ⁿ n! √π, el error queda
 
 \[\text{error}=\frac{f^{(2n)}(\eta)}{(2n)!}\cdot\frac{n!\,\sqrt{\pi}}{\underline{\hspace{1.2cm}}} .\]
 
 \subsection{I.2 · Pruébalo a mano con n = 2 (3 puntos)}
 
-En el estado base del oscilador (ħ = m = ω = 1), la densidad de probabilidad es \textbar ψ₀(x)\textbar² = e\textsuperscript{−x²}/√π, así que ⟨f⟩ = (1/√π) ∫ e\textsuperscript{−x²} f(x) dx. Datos: ∫ e\textsuperscript{−x²} dx = √π, ∫ x² e\textsuperscript{−x²} dx = √π/2, y el valor exacto es ⟨x⁴⟩ = 3/4.
+En el estado base del oscilador (ħ = m = ω = 1), la densidad de probabilidad es \textbar ψ₀(x)\textbar² = e\textsuperscript{−x²}/√π, así que ⟨f⟩ = (1/√π) \ensuremath{\int} e\textsuperscript{−x²} f(x) dx. Datos: \ensuremath{\int} e\textsuperscript{−x²} dx = √π, \ensuremath{\int} x² e\textsuperscript{−x²} dx = √π/2, y el valor exacto es ⟨x⁴⟩ = 3/4.
 
 \begin{enumerate}
 \def\labelenumi{\alph{enumi})}
 \item
-  Con H₂ = 4x² − 2, halla los nodos x₁, x₂ y calcula w₁ = ∫ e\textsuperscript{−x²} L₁(x)² dx. Escribe L₁ explícitamente. (Por simetría, w₂ = w₁.)
+  Con H₂ = 4x² − 2, halla los nodos x₁, x₂ y calcula w₁ = \ensuremath{\int} e\textsuperscript{−x²} L₁(x)² dx. Escribe L₁ explícitamente. (Por simetría, w₂ = w₁.)
 \item
   Calcula la aproximación de ⟨x⁴⟩ con la regla de 2 nodos.
 \item
@@ -107,7 +105,7 @@ En el estado base del oscilador (ħ = m = ω = 1), la densidad de probabilidad e
 \item
   ¿En qué paso se usó que los nodos son \textbf{las raíces de Hₙ} y no unos nodos cualesquiera? Si tomas los nodos −1, 0, 1, ¿qué pasa con los Bⱼ? (Vas a ver la respuesta numérica en la Parte III, acción C.)
 \item
-  ¿En qué paso hace falta que e\textsuperscript{−x²} ∏(x − xₖ)² no cambie de signo? ¿Qué se perdería si cambiara?
+  ¿En qué paso hace falta que e\textsuperscript{−x²} \ensuremath{\prod}(x − xₖ)² no cambie de signo? ¿Qué se perdería si cambiara?
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -122,7 +120,7 @@ En el estado base del oscilador (ħ = m = ω = 1), la densidad de probabilidad e
 
 (Con a = 1/√(2D), V\textsubscript{M} y V\_arm tienen la misma curvatura en x = 0.) La diferencia es g(x) = V\textsubscript{M}(x) − x²/2.
 
-\textbf{Receta 1 (primer orden).} Un término extra W(x) corre el nivel base en ⟨ψ₀\textbar W\textbar ψ₀⟩ = (1/√π) ∫ e\textsuperscript{−x²} W(x) dx.
+\textbf{Receta 1 (primer orden).} Un término extra W(x) corre el nivel base en ⟨ψ₀\textbar W\textbar ψ₀⟩ = (1/√π) \ensuremath{\int} e\textsuperscript{−x²} W(x) dx.
 
 \textbf{Receta 2 (segundo orden, solo para un término cúbico b·x³).} Lo corre en −(11/8) b².
 
@@ -238,7 +236,7 @@ La fundamental es la transición v = 0 → 1: ν = E₁ − E₀. Para el armón
 \textbf{Escenario inventado para este parcial.} Los números de la tabla sí están calculados de verdad, pero el agente no existe.
 \end{quote}
 
-Un agente de RL tiene un \textbf{presupuesto de 6 condiciones} para estimar valores esperados en el estado base, ⟨f⟩ = (1/√π) ∫ e\textsuperscript{−x²} f(x) dx. Una condición es un valor f(xⱼ) o una derivada f′(xⱼ). En cada acción escoge dónde poner las condiciones y usa la regla que integra exactamente el polinomio (Lagrange u osculante) que pasa por ellas. Su recompensa es −\textbar error\textbar{} en ⟨g⟩ = ⟨V\textsubscript{M} − V\_arm⟩ de HCl (valor exacto 0,0078276501608889). Las acciones E y F están como referencia.
+Un agente de RL tiene un \textbf{presupuesto de 6 condiciones} para estimar valores esperados en el estado base, ⟨f⟩ = (1/√π) \ensuremath{\int} e\textsuperscript{−x²} f(x) dx. Una condición es un valor f(xⱼ) o una derivada f′(xⱼ). En cada acción escoge dónde poner las condiciones y usa la regla que integra exactamente el polinomio (Lagrange u osculante) que pasa por ellas. Su recompensa es −\textbar error\textbar{} en ⟨g⟩ = ⟨V\textsubscript{M} − V\_arm⟩ de HCl (valor exacto 0,0078276501608889). Las acciones E y F están como referencia.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}

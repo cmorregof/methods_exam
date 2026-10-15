@@ -1,64 +1,130 @@
-% Preámbulo de los parciales · XeLaTeX · mismo estilo de los labs (rl_metodos/docs/curso/tex/preambulo.tex)
-% Tipografía: Inter (cubre subíndices y griegas Unicode), con DejaVu Sans para los pocos símbolos que le faltan.
+% Preámbulo de los parciales · XeLaTeX · estilo clásico de examen (Latin Modern)
 \documentclass[11pt,a4paper]{article}
-\usepackage[margin=20mm,top=18mm,bottom=20mm]{geometry}
+\usepackage[margin=22mm,top=20mm,bottom=24mm,footskip=12mm]{geometry}
 \usepackage{fontspec}
-\setmainfont{Inter}[BoldFont={Inter SemiBold}, ItalicFont={Inter Italic}, BoldItalicFont={Inter SemiBold Italic}, Scale=0.95]
-\setsansfont{Inter}
-\setmonofont{DejaVu Sans Mono}[Scale=0.82]
-\newfontfamily\dv{DejaVu Sans}[Scale=0.9]
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}[Scale=1.0]
+\newfontfamily\dv{DejaVu Sans}[Scale=0.85]
 \usepackage{unicode-math}
-\setmathfont{latinmodern-math.otf}
+\setmathfont{Latin Modern Math}
 \usepackage{polyglossia}\setdefaultlanguage{spanish}
-\usepackage{xcolor,booktabs,longtable,array,calc,tabularx,enumitem,parskip,microtype,titlesec,fancyhdr,newunicodechar}
+\usepackage{xcolor,booktabs,longtable,array,calc,tabularx,enumitem,parskip,microtype,titlesec,fancyhdr,newunicodechar,lastpage}
 \usepackage[most]{tcolorbox}
 \usepackage[hidelinks]{hyperref}
 \emergencystretch=3em
 \providecommand{\tightlist}{\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-1}
 
-\newunicodechar{∈}{{\dv ∈}}
-\newunicodechar{∎}{{\dv ∎}}
-\newunicodechar{⟨}{{\dv ⟨}}
-\newunicodechar{⟩}{{\dv ⟩}}
-\newunicodechar{☐}{{\dv ☐}}
+% --- Caracteres Unicode que Latin Modern no trae: se componen con TeX ---------------
+\newcommand{\casilla}{\fbox{\rule{0pt}{0.55em}\hspace{0.55em}}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
+\newunicodechar{⟺}{\ensuremath{\iff}}
+\newunicodechar{∎}{\ensuremath{\QED}}
+\newunicodechar{☐}{\casilla}
 \newunicodechar{✔}{{\dv ✔}}
 \newunicodechar{✘}{{\dv ✘}}
-\AtBeginDocument{\def\square{\mbox{\dv ☐}}}
+\newunicodechar{⚠}{{\dv ⚠}}
+\newunicodechar{⁰}{\textsuperscript{0}}
+\newunicodechar{⁴}{\textsuperscript{4}}
+\newunicodechar{⁵}{\textsuperscript{5}}
+\newunicodechar{⁶}{\textsuperscript{6}}
+\newunicodechar{⁷}{\textsuperscript{7}}
+\newunicodechar{⁸}{\textsuperscript{8}}
+\newunicodechar{⁹}{\textsuperscript{9}}
+\newunicodechar{⁺}{\textsuperscript{+}}
+\newunicodechar{⁻}{\textsuperscript{\ensuremath{-}}}
+\newunicodechar{⁽}{\textsuperscript{(}}
+\newunicodechar{⁾}{\textsuperscript{)}}
+\newunicodechar{ⁿ}{\textsuperscript{n}}
+\newunicodechar{₀}{\textsubscript{0}}
+\newunicodechar{₁}{\textsubscript{1}}
+\newunicodechar{₂}{\textsubscript{2}}
+\newunicodechar{₃}{\textsubscript{3}}
+\newunicodechar{₊}{\textsubscript{+}}
+\newunicodechar{₋}{\textsubscript{\ensuremath{-}}}
+\newunicodechar{ₑ}{\textsubscript{e}}
+\newunicodechar{ₖ}{\textsubscript{k}}
+\newunicodechar{ₙ}{\textsubscript{n}}
+\newunicodechar{ᵢ}{\textsubscript{i}}
+\newunicodechar{ⱼ}{\textsubscript{j}}
+\AtBeginDocument{\def\square{\casilla}%
+  \newunicodechar{′}{\ensuremath{{}^{\prime}}}%
+  \newunicodechar{″}{\ensuremath{{}^{\prime\prime}}}%
+  \newunicodechar{‴}{\ensuremath{{}^{\prime\prime\prime}}}}
 
-\definecolor{tinta}{HTML}{1F2933}
-\definecolor{acento}{HTML}{B7410E}
-\definecolor{suave}{HTML}{F4F1EC}
-\definecolor{gris}{HTML}{6B7280}
-\definecolor{linea}{HTML}{D6D0C6}
-\color{tinta}
-
-\titleformat{\section}{\Large\bfseries\color{acento}}{}{0em}{}
-\titleformat{\subsection}{\large\bfseries}{}{0em}{}
-\titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
-\titlespacing*{\section}{0pt}{1.4em}{0.4em}
+% --- Títulos ---------------------------------------------------------------------------
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\vspace{1pt}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.5em}{0.6em}
 \titlespacing*{\subsection}{0pt}{1.0em}{0.25em}
-\setlist{nosep, leftmargin=1.4em, itemsep=2pt}
-\renewcommand{\arraystretch}{1.3}
+\setlist{nosep, leftmargin=1.5em, itemsep=2pt}
+\renewcommand{\arraystretch}{1.25}
 \setlength{\LTpre}{6pt}\setlength{\LTpost}{6pt}
 
-% citas: el escenario inventado y las notas
-\renewenvironment{quote}{\begin{tcolorbox}[colback=suave, colframe=linea, boxrule=0.5pt, arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt]}{\end{tcolorbox}}
-% código corto
-\let\oldverbatim\verbatim
-\let\endoldverbatim\endverbatim
+% --- Recuadros: el escenario inventado y las notas van con una barra a la izquierda -----
+\renewenvironment{quote}{\begin{tcolorbox}[enhanced, breakable, colback=black!3, colframe=black!3, boxrule=0pt,
+  sharp corners, borderline west={1.2pt}{0pt}{black!70}, left=8pt, right=6pt, top=4pt, bottom=4pt]}{\end{tcolorbox}}
 
-% espacios para escribir
-\newcommand{\hueco}[1]{\rule[-1.5pt]{\dimexpr #1\dimexpr 0.33em\relax\relax}{0.45pt}}
-\newcommand{\lineasrespuesta}[1]{\par\vspace{2pt}{\color{linea}\foreach\i in {1,...,#1}{\vspace{0.75cm}\hrule height 0.5pt}}\par\vspace{4pt}}
+% --- Espacios para escribir -----------------------------------------------------------------
+\newcommand{\hueco}[1]{\rule[-1.5pt]{\dimexpr #1\dimexpr 0.33em\relax\relax}{0.4pt}}
+\newcommand{\lineasrespuesta}[1]{\par\vspace{2pt}{\color{black!35}\foreach\i in {1,...,#1}{\vspace{0.75cm}\hrule height 0.4pt}}\par\vspace{4pt}}
 \newcommand{\filarespuesta}{\rule{0pt}{1.25cm}}
 
+% --- Encabezado y pie ------------------------------------------------------------------------
 \pagestyle{fancy}\fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\fancyfoot[C]{\small\color{gris}\docpie\ · página \thepage}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\footnotesize Métodos Numéricos · \docpie}
+\fancyfoot[R]{\footnotesize Página \thepage\ de \pageref{LastPage}}
 
+% #1 título del parcial · #2 subtítulo · #3 línea de entrega
 \newcommand{\cabecera}[3]{%
-  {\huge\bfseries\color{acento}#1\par}\vspace{4pt}
-  {\large #2\par}\vspace{2pt}
-  {\small\color{gris}#3\par}\vspace{6pt}
-  {\color{linea}\hrule height 0.6pt}\vspace{8pt}}
+  \thispagestyle{fancy}%
+  \noindent\begin{minipage}[t]{0.64\textwidth}\small
+    \textsc{Universidad Nacional de Colombia}\\
+    Sede Manizales · Departamento de Matemáticas y Estadística
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.34\textwidth}\small\raggedleft
+    \textsc{Métodos Numéricos}\\
+    Semestre 2026-2
+  \end{minipage}\par\vspace{5pt}
+  \hrule height 0.8pt\vspace{1.5pt}\hrule height 0.3pt
+  \vspace{14pt}
+  \begin{center}
+    {\small\scshape Parcial 1 · para la casa}\\[6pt]
+    {\LARGE\bfseries #1}\\[5pt]
+    {\large\itshape #2}\\[8pt]
+    {\small #3}
+  \end{center}
+  \vspace{4pt}
+  \noindent\textbf{Nombre:}\ \hrulefill\quad\textbf{Documento:}\ \makebox[4.2cm]{\hrulefill}\par\vspace{10pt}
+  \begin{center}
+  \begin{tabular}{l*{5}{>{\centering\arraybackslash}p{1.35cm}}}
+    \toprule
+    Parte & I & II & III & IV & \textbf{Total}\\
+    \midrule
+    Puntos & 12 & 14 & 12 & 12 & \textbf{50}\\
+    \midrule
+    Obtenidos\rule[-0.45cm]{0pt}{1.0cm} & & & & & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{2pt}}
