@@ -1,0 +1,436 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Raíces C · Crédito}
+\begin{document}
+\cabecera{Raíces C · ¿Cuánto te cobra de verdad el banco?}{Regla falsa y Newton con datos de la Superintendencia Financiera}{Entrega y sustentación: martes 20 de octubre de 2026 · Prof. Carlos Orrego}
+Cuando pides un crédito, el banco te dice tres cosas: cuánto te presta (P), a cuántos meses (n) y cuánto pagas cada mes (A). La tasa mensual i que esconden esos tres números cumple
+
+\[P \;=\; A\sum_{k=1}^{n}(1+i)^{-k} \;=\; A\,\frac{1-(1+i)^{-n}}{i}\]
+
+y \textbf{no hay manera de despejar i}: para saber cuánto te cobran de verdad hay que buscar una raíz. Después la pasas a tasa efectiva anual, EA = (1 + i)¹² − 1, y la comparas con dos cosas reales: lo que cobran los bancos colombianos según la \textbf{Superintendencia Financiera} (datos abiertos en datos.gov.co) y la \textbf{tasa de usura}, el techo legal por encima del cual cobrar intereses es delito (Código Penal, art. 305).
+
+En todo el parcial trabajamos con la función (escrita \textbf{como suma}, sin dividir por i)
+
+\[g(i) \;=\; P - A\sum_{k=1}^{n}(1+i)^{-k}, \qquad g'(i) \;=\; A\sum_{k=1}^{n}k\,(1+i)^{-k-1}.\]
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_raices\_credito.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{raices-C-credito}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\subsection{I.1 · La tasa existe y es única (5 puntos)}
+
+\textbf{Teorema.} Si P \textgreater{} 0, A \textgreater{} 0, n ≥ 1 y nA \textgreater{} P (pagas en total más de lo que te prestaron), entonces g tiene \textbf{exactamente una} raíz i* en el intervalo {[}0, A/P{]}.
+
+\textbf{Demostración (llena los espacios).}
+
+\emph{Existencia.} g es continua en {[}0, A/P{]} porque es una suma finita de funciones \hueco{22} (½ pt).
+
+\begin{itemize}
+\tightlist
+\item
+  En i = 0: cada término (1 + 0)⁻ᵏ vale \hueco{6} , así que g(0) = P − \hueco{6} , que es \textless{} 0 porque \hueco{14} (1 pt).
+\item
+  En i = A/P: para i \textgreater{} 0 la suma es geométrica y
+\end{itemize}
+
+\[\sum_{k=1}^{n}(1+i)^{-k} \;=\; \frac{1-(1+i)^{-n}}{i} \;<\; \frac{1}{i}
+\qquad \text{porque } (1+i)^{-n} \;\_\_\_\_\_\_\; 0 .\]
+
+Con i = A/P queda A·Σ \textless{} A·(1/i) = A·(P/A) = \hueco{6} , y por tanto g(A/P) \hueco{6} 0 (1 pt).
+
+Por el teorema del \hueco{22} existe i* en (0, A/P) con g(i*) = 0 (½ pt).
+
+\emph{Unicidad.} g′(i) = A·Σ k(1 + i)⁻ᵏ⁻¹ es una suma de términos \hueco{14} para i \textgreater{} −1, luego g′(i) \textgreater{} 0 y g es estrictamente \hueco{14} . Si hubiera dos raíces i₁ \textless{} i₂, el teorema de \hueco{14} daría un ξ entre ellas con g′(ξ) = 0: contradicción (1½ pts). ∎
+
+\textbf{Pregunta corta (½ pt).} ¿En qué renglón se usó la hipótesis nA \textgreater{} P? Si nA = P (crédito ``sin intereses''), ¿cuál es la raíz?
+
+\lineasrespuesta{3}
+
+\subsection{I.2 · Por qué la regla falsa se queda con un extremo fijo (4 puntos)}
+
+Derivando otra vez: g″(i) = −A·Σ k(k + 1)(1 + i)⁻ᵏ⁻² \textless{} 0. O sea, g es \textbf{creciente y cóncava} (se curva hacia abajo).
+
+\textbf{Teorema.} Sea g continua y dos veces derivable en {[}a, b{]}, con g(a) \textless{} 0 \textless{} g(b), g′ \textgreater{} 0 y g″ \textless{} 0. Sea c la raíz de la recta que pasa por (a, g(a)) y (b, g(b)) (el paso de la regla falsa). Entonces c \textgreater{} i*, y por eso la regla falsa \textbf{nunca mueve el extremo a}.
+
+\textbf{Demostración (llena los espacios).} La recta es el polinomio de Lagrange P₁ de grado 1 con nodos a y b. Por el teorema del error de interpolación, para cada x en (a, b) existe ξ en (a, b) con
+
+\[g(x) - P_1(x) \;=\; \frac{g''(\xi)}{2}\,(x-a)(x-b).\]
+
+Para a \textless{} x \textless{} b: (x − a) es \hueco{6} , (x − b) es \hueco{6} y g″(ξ) es \hueco{6} (usa positivo/negativo). Entonces g(x) − P₁(x) \hueco{6} 0, es decir, la recta está \hueco{14} (encima / debajo) de la curva (1½ pts).
+
+Evaluando en x = i*: P₁(i*) \textless{} g(i*) = \hueco{6} . Como P₁ es creciente (su pendiente (g(b) − g(a))/(b − a) es positiva) y P₁(c) = 0 \textgreater{} P₁(i*), concluimos que c \hueco{6} i* (1 pt).
+
+Entonces g(c) \hueco{6} 0, y la regla falsa reemplaza el extremo \hueco{6} (a / b). El extremo \hueco{6} nunca cambia, y todas las rectas salen del mismo punto (a, g(a)) (1 pt). ∎
+
+\textbf{Pregunta corta (½ pt).} ¿En qué renglón se usó g″ \textless{} 0? Si g fuera convexa (g″ \textgreater{} 0) con g(a) \textless{} 0 \textless{} g(b), ¿cuál extremo se quedaría fijo?
+
+\lineasrespuesta{3}
+
+\subsection{I.3 · Puente con interpolación: tres métodos, dos polinomios (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  (1 pt) La regla falsa y la secante toman como siguiente aproximación la raíz del polinomio de \textbf{Lagrange de grado 1} por dos puntos (x₀, g(x₀)) y (x₁, g(x₁)). Escribe esa raíz:
+\end{enumerate}
+
+\[x_2 \;=\; x_1 - g(x_1)\,\frac{\_\_\_\_\_\_\_\_\_\_\_\_}{\_\_\_\_\_\_\_\_\_\_\_\_}\]
+
+¿En qué se diferencian la regla falsa y la secante al escoger los dos puntos del paso siguiente? Si las dos arrancan con los mismos puntos x₀ = 0 y x₁ = A/P, ¿por qué su \textbf{primer} iterado es el mismo?
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  (1 pt) Newton toma la raíz del \textbf{Taylor de grado 1} alrededor de iₖ: P(i) = g(iₖ) + g′(iₖ)(i − iₖ). En el lenguaje de la unidad de interpolación, es el polinomio osculante con un nodo x₀ = iₖ y m₀ = \hueco{6} . Escribe iₖ₊₁.
+\item
+  (1 pt) \textbf{A mano:} en i = 0 se tiene g(0) = P − nA y g′(0) = A·(1 + 2 + ⋯ + n) = A·n(n + 1)/2. Muestra que el primer paso de Newton desde i₀ = 0 es
+\end{enumerate}
+
+\[i_1 \;=\; \frac{2\,(nA-P)}{A\,n(n+1)}\]
+
+y calcúlalo para P = 10.000.000, n = 36, A = 368.297,50 (el crédito de la Parte II). i₁ ≈ \hueco{14} . ¿Queda a la izquierda o a la derecha de la tasa verdadera i* ≈ 0,016119?
+
+\lineasrespuesta{3}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+Abre \texttt{parcial\_raices\_credito.ipynb} en Colab. \textbf{La Celda 1} consulta la API de datos.gov.co (Superintendencia Financiera) y, si falla, usa una copia congelada del 15 de octubre de 2026. Algunos de los datos (corte semanal del \textbf{31 de julio de 2026}; tasa efectiva anual promedio, \textbf{ponderada por monto desembolsado} en todos los créditos de ese producto en la semana):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Producto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Entidad
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tasa E.A. reportada
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Libre inversión & Bancolombia & 21,15 \% \\
+Libre inversión & Banco de Bogotá & 23,47 \% \\
+Libre inversión & Banco Unión (la más alta) & 28,76 \% \\
+Vivienda no VIS en pesos & Fondo Nacional del Ahorro (la más baja) & 12,01 \% \\
+Vivienda no VIS en pesos & Bancolombia & 15,76 \% \\
+Tarjeta de crédito (personas y empresas), compras a 25--36 meses & Bancolombia & 28,72 \% \\
+Tarjeta de crédito (personas y empresas), compras a 25--36 meses & Banco Unión (la más alta) & 28,77 \% \\
+\end{longtable}
+
+\textbf{Tasa de usura} (consumo y ordinario) = 1,5 × interés bancario corriente certificado por la Superfinanciera: \textbf{28,79 \% E.A. en julio de 2026} (Resolución 0965) y \textbf{28,59 \% E.A. en octubre de 2026} (Resolución 1472).
+
+(Ojo: el cuaderno imprime con punto decimal. Las tasas reportadas no incluyen seguros ni comisiones.)
+
+En cada ítem: \textbf{(a) predice en papel ANTES de correr, (b) corre la celda, (c) explica.} Si tu predicción falla no pierdes puntos por fallar: los pierdes si no explicas por qué.
+
+\subsection{II.1 · Del banco a la cuota y de vuelta a la tasa --- Celda 3 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} con la tasa de Bancolombia en libre inversión (21,15 \% E.A.), ¿de cuánto será la cuota de un crédito de 10 millones a 36 meses? Ordena regla falsa, secante y Newton de menos a más \textbf{iteraciones}, y luego de menos a más \textbf{evaluaciones} (Newton gasta 2 por iteración: g y g′).
+\item
+  \textbf{Corre} la Celda 3 y anota: i mensual = \hueco{14} , A = \hueco{14} pesos. Iteraciones/evaluaciones: regla falsa \hueco{6} / \hueco{6} , secante \hueco{6} / \hueco{6} , Newton \hueco{6} / \hueco{6} . ¿Recuperaste la tasa publicada?
+\item
+  \textbf{Explica:} la celda dice que un centavo de cuota equivale a un cambio en i de ≈ 1,6·10⁻⁹. ¿La tolerancia 10⁻¹⁰ en i es más o menos exigente que ``acertar la cuota al centavo''? Cambia \texttt{tol} a \texttt{1.5e-9} (≈ un centavo): ¿cuántas evaluaciones ahorra cada método?
+\end{enumerate}
+
+\subsection{II.2 · El extremo fijo y el orden de convergencia --- Celda 4 (4 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} usando I.2, ¿qué extremo de la regla falsa se mueve? ¿En qué columna esperas una constante (\texttt{razon\_lineal} = eₖ₊₁/eₖ o \texttt{razon\_cuadratica} = eₖ₊₁/eₖ²) para la regla falsa? ¿Y para Newton?
+\item
+  \textbf{Corre} la Celda 4 y anota: la \texttt{razon\_lineal} de la regla falsa se estabiliza en \hueco{6} ; la constante teórica C = 1 − (pendiente de la tangente en i*)/(pendiente de la cuerda desde (0, g(0))) da \hueco{6} ; la \texttt{razon\_cuadratica} de Newton se estabiliza en \hueco{6} y la constante \textbar g″(i*)\textbar/(2g′(i*)) da \hueco{6} . En la gráfica, ¿de qué punto salen todas las cuerdas?
+\item
+  \textbf{Explica} (2 pts): cambia a \texttt{producto\ =\ "vivienda"}, \texttt{n\ =\ 360} (Bancolombia, 30 años). ¿Cuántas iteraciones necesita ahora la regla falsa? ¿Cuánto vale C? Con la figura, explica por qué un plazo largo empeora tanto a la regla falsa: ¿qué le pasa a g(0) = P − nA cuando n = 360? Para la secante, la \texttt{razon\_cuadratica} no se estabiliza: ¿qué orden esperarías según Burden §2.3?
+\end{enumerate}
+
+\subsection{II.3 · El crédito ``sin intereses'' y la indeterminación 0/0 --- Celda 5 (4 puntos)}
+
+La fórmula cerrada a(i) = (1 − (1 + i)⁻ⁿ)/i y la suma a(i) = Σ (1 + i)⁻ᵏ son la misma función para i ≠ 0.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) \textbf{Predice:} ¿cuál es el límite de (1 − (1 + i)⁻ⁿ)/i cuando i → 0? (Pista: L'Hôpital, o el binomio (1 + i)⁻ⁿ ≈ 1 − ni.) ¿Cuántas cifras correctas crees que da la fórmula cerrada en i = 10⁻⁶, 10⁻¹⁰ y 10⁻¹⁵? ¿Y en i = 10⁻¹⁶?
+\item
+  (1 pt) \textbf{Corre} la Celda 5 y anota el error relativo de la fórmula cerrada en i = 10⁻⁶ \hueco{6} , 10⁻¹⁰ \hueco{6} , 10⁻¹⁵ \hueco{6} , y qué da en i = 10⁻¹⁶ \hueco{6} .
+\item
+  (1 pt) \textbf{Explica} con lo visto en punto flotante: ¿qué operación produce cancelación? ¿Por qué en i = 10⁻¹⁶ sale exactamente 0? (Piensa en 1 + 10⁻¹⁶ con ε ≈ 2,2·10⁻¹⁶.) ¿Por qué la forma de suma no sufre nada de esto?
+\item
+  (1 pt) Un almacén ofrece 1.200.000 pesos en 12 cuotas de 100.000. ¿Cuál es la tasa? Con \texttt{tol0\ =\ 1e-12}, ¿qué forma converge con Newton y cuál no? Mira los iterados de la fórmula cerrada: ¿por qué se quedan ``brincando'' cerca de 10⁻¹⁰ en vez de llegar a 0? ¿Y por qué desde i₀ = 0 la fórmula cerrada ni siquiera arranca?
+\end{enumerate}
+
+\subsection{II.4 · Una oferta: ¿es legal? --- Celda 6 (3 puntos)}
+
+Escenario hipotético: te ofrecen 10.000.000 a 36 cuotas de 400.000.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} ¿la tasa efectiva anual queda por encima o por debajo de la usura de octubre (28,59 \%)? ¿Por mucho o por poco?
+\item
+  \textbf{Corre} la Celda 6 y anota: EA de la oferta = \hueco{14} \%, diferencia con la usura \hueco{14} puntos, cuota máxima legal \hueco{14} pesos. ¿Cuántos pesos al mes se pasa la oferta?
+\item
+  \textbf{Explica:} con dEA/di ≈ 15,1, ¿qué error en i te permitiría equivocarte de veredicto? ¿Alcanzaría una tolerancia de 10⁻⁴? Mira también el final de la salida: las tasas más altas de los bancos reales en julio (28,76 \% y 28,77 \%) contra la usura de julio (28,79 \%). ¿Qué te dice eso de dónde se ubican los bancos?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+\textbf{Escenario inventado para este parcial.} El agente no existe; los números de la tabla sí: los calculé con experimentos reales sobre las tasas de la Superfinanciera, y los puedes auditar con la Celda 7.
+\end{quote}
+
+Un agente de aprendizaje por refuerzo recibe un crédito (P, n, A) y escoge una acción:
+\textbf{RF} = regla falsa en {[}0, A/P{]}; \textbf{Sec} = secante con x₀ = 0, x₁ = A/P; \textbf{N₀} = Newton con i₀ = 0; \textbf{N\textsubscript{A}/P} = Newton con i₀ = A/P. Todas paran cuando dos iterados consecutivos difieren menos de 10⁻¹⁰.
+
+\textbf{Recompensa} = −(número de evaluaciones de g y g′). Newton cuesta 2 por iteración; regla falsa y secante, 1 por iteración más las 2 iniciales.
+
+Malla de entrenamiento: P = 10 millones, con la tasa real de \textbf{cada entidad} del corte del 31/07/2026 y varios plazos. Costo promedio por crédito (menor es mejor):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Producto (créditos)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tasas E.A.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Plazos (meses)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+RF
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Sec
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N₀
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N\textsubscript{A}/P
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Acción aprendida}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Vivienda no VIS (16 × 4 = 64) & 12,01 -- 18,00 \% & 120, 180, 240, 360 & 29,42 & \textbf{6,75} & 12,97 & 8,53 & Secante \\
+Libre inversión (32 × 5 = 160) & 16,57 -- 28,76 \% & 12, 24, 36, 60, 84 & 15,02 & \textbf{7,78} & 10,57 & 10,81 & Secante \\
+Tarjeta 25--36 m (27 × 4 = 108) & 18,37 -- 28,77 \% & 6, 12, 24, 36 & 12,13 & \textbf{7,97} & 9,48 & 11,50 & Secante \\
+\end{longtable}
+
+Ninguna acción falló en ninguno de los 332 créditos.
+
+\subsection{III.1 · ¿Verdadero o falso? (6 puntos, 1 por fila)}
+
+Para cada afirmación del agente escribe \textbf{V} o \textbf{F} y justifica en una o dos líneas con la teoría (no basta con ``lo corrí''; usa las Celdas 3 y 7 para auditar).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0606}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Lo que reporta el agente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+V / F
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A & ``En vivienda, la regla falsa me costó en promedio más de 4 veces lo que me costó la secante.'' & & \\
+B & ``La regla falsa sufre en vivienda porque las tasas de vivienda son bajas: a igual plazo, entre más baja la tasa, más evaluaciones necesita.'' & & \\
+C & ``Newton con i₀ = 0 nunca se pasó a la derecha de la raíz en ninguno de los 332 créditos: siempre se acercó por la izquierda.'' & & \\
+D & ``Newton con i₀ = A/P nunca produjo un iterado con tasa negativa.'' & & \\
+E & ``Si entreno con créditos de 100 millones en vez de 10 millones, la tabla cambia, porque g queda 10 veces más grande.'' & & \\
+F & ``Como paré cuando dos iterados difieren menos de 10⁻¹⁰, la regla falsa terminó con error en i menor que 10⁻¹⁰ en todos los créditos.'' & & \\
+\end{longtable}
+
+\emph{Pistas:} para B compara en la Celda 3 el Fondo Nacional del Ahorro (12,01 \%) con el Banco Unión (18,00 \%), ambos en vivienda a 360 meses. Para D corre la Celda 7 con \texttt{producto\ =\ "tarjeta"} y sus plazos. Para F mira \texttt{error\_maximo} y recuerda la constante C de II.2.
+
+\subsection{III.2 · ¿Por qué aprendió la secante? (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Newton tiene orden 2 y la secante orden (1 + √5)/2 ≈ 1,618. Pero Newton paga \textbf{2 evaluaciones} por iteración. Si cada evaluación de Newton ``vale'' medio paso, ¿cuál es su orden por evaluación? (Pista: dos evaluaciones elevan el error al cuadrado, así que una evaluación lo eleva a la potencia \hueco{6} ≈ \hueco{6}.) Compara con 1,618.
+\item
+  (1 pt) En vivienda, N\textsubscript{A}/P (8,53) le gana a N₀ (12,97); en tarjeta pasa al revés (11,50 contra 9,48). Usa que A/P = i/(1 − (1 + i)⁻ⁿ): ¿qué tan cerca está A/P de i cuando n = 360? ¿Y cuando n = 6? (La Celda 7 imprime el rango de (A/P − i*)/i*.)
+\item
+  (1 pt) Usa I.2 y la concavidad de g para explicar por qué la regla falsa es la peor en los cuatro productos aunque \textbf{nunca pierde la raíz}. ¿Qué ventaja real tiene sobre la secante que la recompensa −(evaluaciones) no está midiendo?
+\end{enumerate}
+
+\subsection{III.3 · Reward hacking y verificación (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Un agente ``ahorrador'' quita la división y usa f(i) = P·i − A·(1 − (1 + i)⁻ⁿ). Verifica que f(i) = i·g(i) para i ≠ 0 y calcula \textbf{f(0)}. Con la oferta de II.4 y arrancando en i₀ = 0, ¿qué tasa reporta el agente y cuántas evaluaciones gasta (Celda 7b)? ¿Por qué es la acción favorita de una recompensa −(evaluaciones)? La celda muestra además que desde i₀ = 0,001, 0,005 y 0,009804 Newton también termina en 0, y desde 0,010004 en adelante encuentra la tasa verdadera. ¿Qué tiene de especial i\textsubscript{m} ≈ 0,009904 (mira f′)?
+\item
+  (1 pt) Otro agente para cuando \textbar g(i)\textbar{} \textless{} 100.000 pesos (``menos de una cuota de error''). La Celda 7b dice que reporta 28,27 \% E.A.: ¡legal! Pero la tasa verdadera es 28,64 \% (ilegal). Explica con g(i) ≈ g′(i*)(i − i*) y g′(i*) ≈ 1,59·10⁸ pesos por unidad de i: ¿qué error en i permite ese criterio?
+\item
+  (1 pt) \textbf{El verificador de una sola evaluación.} g es creciente (I.1). Si g(i\_usura) \textless{} 0, ¿de qué lado de i\_usura está la raíz? La Celda 7b da g(i\_usura) = −5.596,18 pesos. Sin resolver ninguna ecuación, ¿es legal la oferta? ¿Qué debería medir la recompensa del agente para que no le convenga ninguno de los dos atajos de (a) y (b)?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra; anótalo en tu bitácora) sobre \textbf{el cálculo de la tasa interna de retorno (TIR) y de la tasa de un crédito}: qué métodos se usan en la práctica (Newton, secante, Brent, salvaguardas con bisección), el problema de las \textbf{múltiples TIR} cuando los flujos cambian de signo más de una vez, la \textbf{regulación} de la tasa de usura en Colombia, y si existen trabajos de aprendizaje automático o RL que escojan el método o el punto inicial.
+
+\textbf{Entrega:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{(4 pts) Síntesis de una página, escrita por ti sin IA.} ¿Qué se sabe? ¿Qué sigue abierto? ¿Qué papel juegan el punto inicial y la forma en que se escribe la ecuación (como la raíz espuria de III.3)?
+\item
+  \textbf{(4 pts) Tabla de 4 fuentes auditadas} (al menos una artículo de revista con revisión por pares, una documentación oficial de software o norma, y una sobre aprendizaje automático o RL para resolver ecuaciones o escoger algoritmos):
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Referencia (autores, año, título, revista o sitio)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Existe? (enlace o DOI que abriste)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tipo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Dice lo que la IA le atribuye? (cita la frase o página)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conexión con el curso (regla falsa, secante, Newton, punto inicial, orden, punto flotante\ldots)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+\emph{Puntos de partida (audítalos tú, no los copies):} la documentación de la función \texttt{RATE}/\texttt{TASA} de Excel (¿qué método, qué tolerancia, cuántas iteraciones, qué punto inicial por defecto?); la regla de los signos de Descartes y la literatura sobre unicidad de la TIR (por ejemplo, la condición de Norstrøm en el \emph{Journal of Financial and Quantitative Analysis}); \texttt{scipy.optimize.brentq}.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  \textbf{(2 pts) Responde dos de estas tres preguntas guía:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Excel pide un punto inicial (``estimar'', 10 \% por defecto) y se rinde tras unas pocas iteraciones. Con lo que viste en III.2, ¿es buen punto inicial 10 \% mensual para un crédito de vivienda a 30 años? ¿Qué propondrías tú (A/P, la fórmula de I.3c, otra)?
+  \item
+    Para un crédito con cuotas iguales la tasa es única (Parte I). ¿Qué cambia cuando los flujos cambian de signo varias veces (un proyecto con inversión, ganancias y luego un costo de cierre)? ¿Cuántas raíces puede haber y qué hace un método como la regla falsa o Brent en ese caso?
+  \item
+    ¿Existen trabajos que aprendan a escoger el método o el punto inicial (selección de algoritmos, ``learning to optimize'', RL)? ¿Lo hacen para TIR o tasas, o para problemas más generales?
+  \end{itemize}
+\item
+  \textbf{(2 pts) Cierre.} Nuestra idea de paper: agentes de RL que aprenden las mismas decisiones que un estudiante de métodos numéricos (qué método usar, dónde empezar, cuándo parar). \textbf{¿Qué tendría que ser verdad para que nuestra idea fuera nueva en tu tema?} Sé concreto: ¿qué no ha hecho nadie según tus fuentes, y cómo lo comprobarías? ¿Qué recompensa usarías para que el agente no caiga en los atajos de III.3?
+\end{enumerate}
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}

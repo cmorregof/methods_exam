@@ -1,0 +1,446 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Taylor · GPS}
+\begin{document}
+\cabecera{Polinomio de Taylor y el GPS}{Por qué el GPS de tu celular necesita a Einstein}{Entrega y sustentación: martes 20 de octubre de 2026 · Prof. Carlos Orrego}
+Tu celular sabe dónde estás porque mide cuánto tarda la señal de cada satélite GPS en llegarle, y para eso los relojes de los satélites tienen que estar sincronizados con los de tierra a nivel de nanosegundos. El problema es que esos relojes no marchan al mismo ritmo que los de tierra. La velocidad del satélite los \textbf{atrasa} (relatividad especial) y estar más arriba en el campo gravitatorio los \textbf{adelanta} (relatividad general). Los dos efectos son de tamaño 10⁻¹⁰, y por eso la especificación oficial del GPS (IS-GPS-200) fabrica el reloj del satélite a \textbf{10,2299999954326 MHz} y no a 10,23 MHz. Calcular bien esos números en un computador es un problema del \textbf{polinomio de Taylor} y de la \textbf{aritmética de punto flotante}.
+
+\textbf{La física, como receta de una línea (no necesitas saber relatividad).} Con x = v²/c² (v: velocidad del satélite, c: velocidad de la luz):
+
+\begin{itemize}
+\tightlist
+\item
+  ritmo que el reloj \textbf{pierde} por velocidad: γ − 1, donde
+\end{itemize}
+
+\[\gamma = \frac{1}{\sqrt{1-x}}, \qquad x = \frac{v^2}{c^2}\]
+
+\begin{itemize}
+\tightlist
+\item
+  ritmo que el reloj \textbf{gana} por gravedad: GM·(1/R\textsubscript{T} − 1/r)/c², con r el radio de la órbita y R\textsubscript{T} el radio de la Tierra.
+\end{itemize}
+
+En todo el parcial: g(x) = (1 − x)\^{}(−1/2), de modo que γ − 1 = g(x) − 1.
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_taylor\_gps.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{taylor-gps}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\subsection{I.1 · El Teorema de Taylor aplicado a γ (5 puntos)}
+
+\textbf{Teorema de Taylor (Burden, §1.1).} Si g ∈ Cⁿ{[}a, b{]}, g⁽ⁿ⁺¹⁾ existe en {[}a, b{]} y x₀ ∈ {[}a, b{]}, entonces para cada x en {[}a, b{]} existe ξ(x) entre x₀ y x tal que g(x) = Pₙ(x) + Rₙ(x), con
+
+\[P_n(x) = \sum_{k=0}^{n} \frac{g^{(k)}(x_0)}{k!}\,(x-x_0)^k \]
+
+\[R_n(x) = \frac{g^{(\_\_\_\_)}(\xi(x))}{(\_\_\_\_)!}\,(x-x_0)^{\_\_\_\_} \qquad (1\ \text{pt})\]
+
+\textbf{Aplicación (llena los espacios).} Toma g(x) = (1 − x)\^{}(−1/2), x₀ = 0 y 0 \textless{} x ≤ 2·10⁻¹⁰ (los satélites GPS tienen x ≈ 1,7·10⁻¹⁰).
+
+Derivando con la regla de la cadena:
+
+\begin{itemize}
+\tightlist
+\item
+  g′(x) = ½ (1 − x)\^{}(−3/2), así que g′(0) = \hueco{6} .
+\item
+  g″(x) = \hueco{6} (1 − x)\^{}(−5/2), así que g″(0) = \hueco{6} . (1 pt)
+\end{itemize}
+
+Entonces P₁(x) = g(0) + g′(0)·x = \hueco{14} , es decir, γ − 1 ≈ x/2. (½ pt)
+
+El resto es
+
+\[R_1(x) = \frac{g''(\xi)}{2}\,x^2 = \frac{3}{8}\,(1-\xi)^{-5/2}\,x^2, \qquad 0 < \xi < x .\]
+
+Como la función ξ ↦ (1 − ξ)\^{}(−5/2) es \hueco{14} (creciente / decreciente) en {[}0, 1), su valor más grande en {[}0, x{]} está en ξ = \hueco{6} . Por eso, para 0 \textless{} x ≤ 2·10⁻¹⁰, (1 pt)
+
+\[|R_1(x)| \;\le\; \frac{3}{8}\,(1-2\cdot 10^{-10})^{-5/2}\,(2\cdot 10^{-10})^2 \;\approx\; \_\_\_\_\_\_\_\_\_\_\_ .\]
+
+(Usa (1 − 2·10⁻¹⁰)\^{}(−5/2) ≈ 1,0000000005.) (1 pt)
+
+\textbf{Pregunta corta (½ pt).} ¿En qué renglón se usó que x \textless{} 1? ¿Qué le pasa al factor (1 − ξ)\^{}(−5/2) si x se acerca a 1?
+
+\lineasrespuesta{3}
+
+\subsection{I.2 · ¿Cuántos términos hacen falta? (4 puntos)}
+
+Lo que importa en el GPS es el error \textbf{relativo}: el error dividido entre el tamaño de γ − 1. Como γ − 1 ≥ x/2, dividir \textbar R₁(x)\textbar{} entre x/2 da
+
+\[\frac{|R_1(x)|}{x/2} \;\le\; \frac{3}{4}\,(1-x)^{-5/2}\,x .\]
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Evalúa esa cota para x = 2·10⁻¹⁰: error relativo ≤ \hueco{14} .
+\item
+  (1 pt) Los coeficientes de Taylor de g son 1, 1/2, 3/8, 5/16, \ldots{} (cada uno es el anterior por (2k − 1)/(2k)). Con el grado 2 la cota relativa es (5/8)(1 − x)\^{}(−7/2)·x². Evalúala en x = 2·10⁻¹⁰: \hueco{14} .
+\item
+  (1 pt) Queremos un error relativo ≤ 10⁻¹². ¿Cuál es el \textbf{menor grado} n que sirve para todo 0 \textless{} x ≤ 2·10⁻¹⁰? n = \hueco{6} .
+\item
+  (1 pt) ¿Hasta qué velocidad basta el grado 1? Usa la cota (3/4)·x ≤ 10⁻¹² (el factor (1 − x)\^{}(−5/2) es prácticamente 1) y despeja v = c·√x:
+\end{enumerate}
+
+\[\frac{3}{4}\,\frac{v^2}{c^2} \le 10^{-12} \iff v \le c\,\sqrt{\tfrac{4}{3}\cdot 10^{-12}} \approx \_\_\_\_\_\_\_\_\ \text{m/s}\]
+
+¿Un avión comercial (≈ 250 m/s) queda por debajo? ¿Y un satélite GPS (≈ 3900 m/s)?
+
+\lineasrespuesta{3}
+
+\subsection{I.3 · Puente: Taylor es un osculante y Newton es su raíz (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Pₙ cumple Pₙ⁽ᵏ⁾(x₀) = g⁽ᵏ⁾(x₀) para k = 0, 1, \ldots, n.~En el lenguaje de la unidad de interpolación, Pₙ es el polinomio \textbf{osculante} con \hueco{6} nodo(s), x₀, y m₀ = \hueco{6} .
+\item
+  (1 pt) Sea f una función y pₖ una aproximación de su raíz. Escribe el Taylor de grado 1 de f alrededor de pₖ, iguálalo a cero y despeja. Llama pₖ₊₁ a la solución: pₖ₊₁ = \hueco{22} . ¿Qué método es?
+\item
+  (1 pt) Para calcular s = √(1 − x), aplica \textbf{un} paso de ese método a f(s) = s² − (1 − x), empezando en s₀ = 1. Muestra que s₁ = 1 − x/2. ¿Qué polinomio de Taylor reconoces ahí? (Compáralo con el P₁ de I.1, que era para (1 − x)\^{}(−1/2).)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+Abre el cuaderno \texttt{parcial\_taylor\_gps.ipynb} en Colab. \textbf{La Celda 1} consulta CelesTrak (elementos orbitales públicos de la Fuerza Espacial de EE. UU.) y, si falla, usa una copia congelada del 15 de octubre de 2026. Los objetos son:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Objeto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N.º de catálogo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Excentricidad e
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Vueltas por día n
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Satélite GPS NAVSTAR 43 (lanzado en 1997) & 24876 & 0,0106459 & 2,00564660 \\
+Satélite GPS NAVSTAR 77 (lanzado en 2018) & 43873 & 0,0040402 & 2,00565579 \\
+Satélite GPS NAVSTAR 81 (lanzado en 2021) & 48859 & 0,0029210 & 2,00562236 \\
+Estación Espacial Internacional (EEI) & 25544 & 0,0006711 & 15,48855783 \\
+\end{longtable}
+
+Constantes (Ashby, 2003, \emph{Living Reviews in Relativity}): GM = 3,986004418·10¹⁴ m³/s², R\textsubscript{T} = 6 378 137 m; c = 299 792 458 m/s. El radio de la órbita sale de las vueltas por día: ω = 2πn/86 400, r = (GM/ω²)\^{}(1/3), v = √(GM/r). (Ojo: el cuaderno imprime con punto decimal. Si la Celda 1 trajo datos en vivo, tus cifras pueden cambiar en los últimos decimales: anota las tuyas.)
+
+En cada ítem: \textbf{(a) predice en papel ANTES de correr, (b) corre la celda, (c) explica.} Si tu predicción falla, no pierdes puntos por fallar: los pierdes si no explicas por qué.
+
+\subsection{II.1 · ¿Qué tan rápido va un satélite GPS? --- Celda 2 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} un satélite GPS da 2 vueltas por día a r ≈ 26 560 km del centro de la Tierra. Calcula a mano v ≈ 2πr/(medio día) en km/s y x = v²/c². ¿La EEI (≈ 15,5 vueltas por día, mucho más baja) va más rápido o más despacio? ¿Su x es mayor o menor que el del GPS?
+  v\_GPS ≈ \hueco{6} km/s, x\_GPS ≈ \hueco{6} ; EEI: \hueco{14}
+\item
+  \textbf{Corre} la Celda 2 y anota, para NAVSTAR 81: r = \hueco{6} km, altura = \hueco{6} km, v = \hueco{6} km/s, x = \hueco{6} . Para la EEI: v = \hueco{6} km/s, x = \hueco{6} .
+\item
+  \textbf{Explica:} ¿por qué x\_EEI es casi 4 veces x\_GPS? (Mira la razón de las velocidades.) ¿Qué tan cerca quedó tu cálculo a mano del de la celda?
+\end{enumerate}
+
+\subsection{II.2 · Einstein en microsegundos por día --- Celda 3 (4 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} ¿qué efecto gana en el GPS, la gravedad o la velocidad? ¿Cuántos microsegundos por día crees que se adelanta neto el reloj? (La ESA dice ``≃ 38 μs/día''.) ¿Y el reloj de la EEI, que va al doble de velocidad pero está solo a \textasciitilde420 km de altura: se adelanta o se atrasa?
+\item
+  \textbf{Corre} la Celda 3 y anota para NAVSTAR 81: gravedad \hueco{6} μs/día, velocidad \hueco{6} μs/día, neto \hueco{6} μs/día. EEI neto: \hueco{6} μs/día. Frecuencia oficial: \hueco{14} Hz; con tu cálculo: \hueco{14} Hz.
+\item
+  \textbf{Explica:} la diferencia entre tu Δf/f y el oficial (−4,4647·10⁻¹⁰) es de 0,36 \% (unos 0,14 μs/día). ¿Por qué crees que el cálculo oficial da un poco más? \emph{Pista:} nuestra receta trata el reloj de tierra como si estuviera quieto, pero la Tierra gira (en el ecuador el suelo va a ≈ 465 m/s). ¿Ese movimiento atrasa o adelanta al reloj de tierra? ¿Para qué lado mueve la diferencia?
+\end{enumerate}
+
+\subsection{II.3 · Cancelación catastrófica en vivo --- Celdas 4, 5 y 6 (4 puntos)}
+
+Corre primero la Celda 4 (puedes completar tu función de Taylor; si no, la 4b usa la de respaldo).
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} en doble precisión ε ≈ 2,2·10⁻¹⁶ y x ≈ 1,7·10⁻¹⁰. Al calcular 1 − x, el número queda guardado con un error relativo de hasta ε; después calcular 1/√(·) y \textbf{restar 1} deja un resultado de tamaño x/2 ≈ 8·10⁻¹¹. ¿Cuántas de las \textasciitilde16 cifras crees que sobreviven? ¿Y en float32 (ε ≈ 1,2·10⁻⁷)?
+  Doble: \hueco{6} cifras. float32: \hueco{6} cifras.
+\item
+  \textbf{Corre} la Celda 5 (NAVSTAR 81) y anota el error relativo y las cifras correctas de: directa en float64 \hueco{6} / \hueco{6} ; Taylor grado 1 \hueco{6} / \hueco{6} ; Taylor grado 2 \hueco{6} / \hueco{6} ; directa en float32 \hueco{6} / \hueco{6} .
+\item
+  \textbf{Explica:} usa la estimación ``error relativo ≈ ε / (x/2)'' para justificar el número de la fórmula directa en float64. ¿Por qué en float32 el resultado es exactamente 0? (La celda imprime si 1 − x = 1.) ¿Por qué el grado 1 da \textasciitilde10 cifras y no 16? (Usa I.2.) La línea \texttt{expm1(-log1p(-x)/2)} usa dos funciones de biblioteca que existen precisamente para esto: ¿qué cifras obtiene?
+\item
+  \textbf{Corre} la Celda 6 (la gráfica en ``V''). ¿El error de la fórmula directa sube o baja con x? ¿Y el de Taylor de grado 1? ¿Con qué pendiente sube este último en la gráfica log-log, y por qué (usa R₁ ≈ (3/8)x²)? La celda dice hasta dónde el grado 1 cumple 10⁻¹²: ¿coincide con tu respuesta de I.2 d)?
+\end{enumerate}
+
+\subsection{II.4 · De microsegundos a kilómetros --- Celda 7 (3 puntos)}
+
+El receptor calcula su distancia a cada satélite como c·Δt, así que un error de reloj Δt se vuelve un error de distancia c·Δt.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} si nadie corrigiera los ≈ 38 μs/día, ¿cuántos kilómetros de error acumularías en un día? ¿Y en un minuto?
+\item
+  \textbf{Corre} la Celda 7 con \texttt{horas\ =\ 24}, luego \texttt{horas\ =\ 1} y \texttt{horas\ =\ 1/60}. Anota: 1 día \hueco{6} km, 1 hora \hueco{6} km, 1 minuto \hueco{6} m.
+\item
+  \textbf{Explica:} la celda también calcula la \textbf{corrección periódica} que la IS-GPS-200 manda hacer porque la órbita no es un círculo perfecto: amplitud \textbar F\textbar·e·√a con F = −2√μ/c² = −4,442807633·10⁻¹⁰ s/√m. ¿Cuál de los tres satélites tiene la corrección más grande y por qué? Anota su amplitud en nanosegundos y en metros. ¿Vale la pena corregirla en un celular que quiere precisión de unos pocos metros?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+\textbf{Escenario inventado para este parcial.} El agente no existe; los números de la tabla sí: los calculé con experimentos reales (cada fórmula en doble precisión contra la ``verdad'' de mpmath con 50 cifras) y los puedes auditar con la Celda 8.
+\end{quote}
+
+Un agente de aprendizaje por refuerzo recibe x = v²/c² de un objeto real y escoge \textbf{cómo calcular γ − 1} en doble precisión:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{directa:} 1/√(1 − x) − 1 → 4 operaciones;
+\item
+  \textbf{reescrita:} x / (√(1 − x)·(1 + √(1 − x))) → 5 operaciones (es igual a γ − 1 algebraicamente);
+\item
+  \textbf{Taylor de grado n} (n = 1, \ldots, 20), evaluado con Horner: x·(c₁ + x·(c₂ + \ldots{} + x·cₙ)) → 2n − 1 operaciones.
+\end{itemize}
+
+\textbf{Recompensa} = −(operaciones) − 1000 si el error relativo (medido contra mpmath) supera 10⁻¹². Esto es lo que aprendió:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Objeto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+x = v²/c²
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Error directa
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Error Taylor 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Error Taylor 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Grado mínimo de Taylor (≤ 20)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Acción aprendida}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Avión Boeing 787 (903 km/h) & 7,00·10⁻¹³ & 3,98·10⁻⁴ & 5,25·10⁻¹³ & 1,35·10⁻¹⁶ & 1 & Taylor 1 (1 op.) \\
+Satélite GPS NAVSTAR 81 & 1,67·10⁻¹⁰ & 2,06·10⁻⁶ & 1,25·10⁻¹⁰ & 8,35·10⁻¹⁷ & 2 & Taylor 2 (3 op.) \\
+Estación Espacial Internacional & 6,52·10⁻¹⁰ & 5,04·10⁻⁷ & 4,89·10⁻¹⁰ & 3,81·10⁻¹⁷ & 2 & Taylor 2 (3 op.) \\
+Sonda Parker (191 km/s) & 4,06·10⁻⁷ & 1,93·10⁻¹⁰ & 3,04·10⁻⁷ & 1,03·10⁻¹³ & 2 & Taylor 2 (3 op.) \\
+Electrón de un televisor de tubo (25 kV) & 9,11·10⁻² & 1,45·10⁻¹⁶ & 6,89·10⁻² & 5,25·10⁻³ & 12 & directa (4 op.) \\
+Muón de rayo cósmico (4 GeV) & 0,9993 & 7,85·10⁻¹⁸ & 0,986 & 0,976 & no alcanza & directa (4 op.) \\
+\end{longtable}
+
+(Velocidades: avión, crucero del Boeing 787; sonda Parker, su récord del 24 dic 2024; electrón y muón a partir de su energía: γ = 1 + 25/510,99895 y γ = 4000/105,6583755, con las masas del Particle Data Group; ``la energía media de los muones en el suelo es ≈ 4 GeV'', PDG.)
+
+\subsection{III.1 · ¿Verdadero o falso? (6 puntos, 1 por fila)}
+
+El agente también ``reporta'' estas afirmaciones. Escribe \textbf{V} o \textbf{F} y justifica en una o dos líneas con la teoría (Parte I, Parte II). No basta con ``lo corrí''.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0606}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Lo que reporta el agente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+V / F
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A & ``El grado 1 basta para cualquier objeto más lento que la EEI; por ejemplo, el GPS.'' & & \\
+B & ``La fórmula directa es exacta en doble precisión hasta 10⁻¹²: por algo es la fórmula de Einstein.'' & & \\
+C & ``Para el muón, si sumo suficientes términos de Taylor alrededor de 0, con grado 20 ya basta.'' & & \\
+D & ``Para el electrón del televisor la directa funciona porque x ≈ 0,09 no es pequeño: la resta γ − 1 ≈ 0,049 casi no pierde cifras.'' & & \\
+E & ``Para el avión, Taylor de grado 1 cumple la tolerancia porque su error relativo es ≈ (3/4)·x ≈ 5,25·10⁻¹³ \textless{} 10⁻¹².'' & & \\
+F & ``La reescrita no sufre cancelación (en toda la tabla su error es ≤ 2·10⁻¹⁶); nunca la elegí solo porque cuesta 5 operaciones y siempre había algo más barato que también cumplía.'' & & \\
+\end{longtable}
+
+\emph{Pista para C:} en la Celda 8 la última línea dice cuántos términos necesita el muón. ¿Qué tan rápido decrecen los términos cₖxᵏ si x = 0,9993?
+
+\subsection{III.2 · ¿Por qué aprendió eso? (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1,5 pts) El agente usa Taylor para los objetos lentos y la directa para los rápidos. Explícalo con la gráfica en ``V'' de la Celda 6: hay \textbf{dos} fuentes de error, la de \textbf{redondeo} de la fórmula directa (≈ ε/(x/2), baja cuando x sube) y la de \textbf{truncamiento} de Taylor (≈ (3/4)x para grado 1, ≈ (5/8)x² para grado 2, sube cuando x sube). ¿Qué fuente domina en cada extremo de la tabla?
+\item
+  (1,5 pts) \textbf{Predice} sin correr: ¿qué acción elegiría el agente para un objeto a v = 600 m/s (x ≈ 4,0·10⁻¹²)? Justifica con I.2 d). Luego pon \texttt{v\_extra\ =\ 600} en la Celda 8 y comprueba. ¿Y con \texttt{v\_extra\ =\ 300}?
+\end{enumerate}
+
+\subsection{III.3 · Reward hacking: el agente que se califica a sí mismo (3 puntos)}
+
+Un compañero dice: \emph{``mpmath es lento; midamos el error contra la fórmula directa en doble precisión, que al fin y al cabo es la fórmula exacta.''}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1,5 pts) Cambia \texttt{referencia\ =\ "directa"} en la Celda 8. ¿Qué acción aprende ahora el agente para \textbf{todos} los objetos y con qué error ``medido''? ¿Cuál es el error \textbf{real} de esa acción para el GPS (míralo en la tabla de arriba)? Explica por qué pasa: ¿contra qué se está comparando la fórmula directa?
+\item
+  (1,5 pts) Otro compañero propone quitar el castigo (\texttt{castigo\ =\ 0}). ¿Qué aprende el agente? ¿Qué error relativo tiene esa acción para el muón? Propón una recompensa que no se deje engañar \textbf{sin} usar mpmath. \emph{Pista:} el Teorema de Taylor te da una cota del error que se puede calcular antes de evaluar nada.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra herramienta; anótalo en tu bitácora) sobre \textbf{cómo se evalúan funciones en un computador sin perder cifras}, y su relación con la relatividad en los sistemas de navegación por satélite: cómo calculan las bibliotecas matemáticas exp, log, √ (aproximaciones polinomiales minimax, como en fdlibm o el proyecto CORE-MATH); por qué existen funciones como \texttt{expm1} y \texttt{log1p}; cómo corrigen hoy la relatividad GPS y Galileo; y si hay trabajos de aprendizaje automático o RL que \textbf{escojan aproximaciones o generen código numérico} (reescritura automática de expresiones, superoptimización, búsqueda de algoritmos con RL).
+
+\textbf{Entrega:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{(4 pts) Síntesis de una página, escrita por ti sin IA.} ¿Qué se sabe? ¿Qué problemas siguen abiertos? ¿Qué papel juega el polinomio de Taylor y qué papel juegan los polinomios que \emph{no} son de Taylor (minimax)?
+\item
+  \textbf{(4 pts) Tabla de 4 fuentes auditadas} (al menos una debe ser un artículo con revisión por pares, al menos una debe tratar de relatividad en GNSS y al menos una de aprendizaje automático o búsqueda automática de código numérico):
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Referencia (autores, año, título, revista o repositorio)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Existe? (enlace o DOI que abriste)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tipo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Dice lo que la IA le atribuye? (cita la frase o página)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conexión con el curso (Taylor, resto, cancelación, ε de máquina, osculantes\ldots)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  \textbf{(2 pts) Responde dos de estas tres preguntas guía:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Si el polinomio de Taylor es tan bueno cerca de x₀, ¿por qué las bibliotecas (por ejemplo fdlibm, en su archivo \texttt{e\_exp.c}) usan un polinomio ``minimax'' obtenido con el algoritmo de Remez? ¿Qué minimiza cada uno y en qué intervalo? (Relaciónalo con Chebyshev: minimizar el máximo del error.)
+  \item
+    ¿Qué hace la herramienta Herbie (Panchekha y coautores, PLDI 2015) con una expresión como √(x + 1) − √x? ¿Usa expansiones en serie? ¿Es eso parecido a lo que aprendió nuestro agente?
+  \item
+    En Galileo, dos satélites quedaron por error en órbitas excéntricas (2014). ¿Qué experimento de relatividad se hizo con ellos y por qué la excentricidad (la corrección periódica de II.4) era justamente lo que se necesitaba?
+  \end{itemize}
+\item
+  \textbf{(2 pts) Cierre.} Nuestra idea de paper: agentes de RL que aprenden las mismas decisiones que un estudiante de métodos numéricos (qué fórmula usar, cuántos términos, cuándo una aproximación está certificada). \textbf{¿Qué tendría que ser verdad para que nuestra idea fuera nueva en tu tema?} Sé concreto: ¿qué no ha hecho nadie todavía según tus fuentes (por ejemplo, un agente que escoja la fórmula \textbf{y además entregue la cota de Taylor como certificado}), y cómo lo comprobarías?
+\end{enumerate}
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}
