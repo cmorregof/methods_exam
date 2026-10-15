@@ -23,6 +23,6 @@ Cada estudiante tiene un parcial distinto; el profesor te dice en Classroom cuá
 1. Imprime tu `parcial.pdf` y responde a mano en la guía.
 2. Abre tu cuaderno con el botón **Open in Colab** y corre las celdas en orden. **Antes de cada celda, escribe tu predicción en la guía.**
 3. Si usas IA, llena la bitácora del final de la guía.
-4. **Martes 20 de octubre:** entregas la guía al empezar la clase y sustentas 10 minutos un punto sorteado.
+4. **Jueves 22 de octubre:** entregas la guía al empezar la clase y sustentas 10 minutos un punto sorteado.
 
 Para guardar tus cambios en el cuaderno: en Colab, *Archivo → Guardar una copia en Drive*.
