@@ -1,0 +1,486 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Lagrange}
+\begin{document}
+\cabecera{Lagrange con datos reales}{Runge, Chebyshev y un agente que escoge los nodos: la población de Colombia}{Métodos Numéricos · UNAL Manizales · parcial para la casa · 50 puntos · entrega y sustentación: martes 20 de octubre de 2026}
+El Banco Mundial publica la población de Colombia año por año desde 1960. Supón que solo puedes guardar \textbf{13 de esos años} y que con ellos tienes que reconstruir todos los demás con un polinomio de Lagrange. ¿Cuáles escoges? ¿Los de cada 5 años, como haría casi cualquiera? En este parcial vas a ver con datos reales que esa elección ``natural'' falla justo en los bordes, que escoger los años más parecidos a los nodos de Chebyshev arregla casi todo, y que un agente que aprende a escoger años puede ganarle a Chebyshev\ldots{} o hacer trampa sin que se note.
+
+Cuaderno: el cuaderno de Colab del parcial (\texttt{parcial\_lagrange.ipynb}). Datos: población total de Colombia (indicador SP.POP.TOTL del Banco Mundial), 1960--2020 como ``verdad'' y 2021--2025 guardados para extrapolar.
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\textbf{Nombre:} \hueco{38} \textbf{Documento:} \hueco{16}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_lagrange.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{lagrange-poblacion}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\textbf{Teorema (error de interpolación).} Sean x₀, x₁, \ldots, xₙ puntos distintos de {[}a, b{]}, f ∈ C⁽ⁿ⁺¹⁾{[}a, b{]} y P el polinomio de Lagrange de grado ≤ n que interpola a f en esos nodos. Entonces, para cada x ∈ {[}a, b{]} existe ξ = ξ(x) ∈ (a, b) tal que
+
+\[f(x) - P(x) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\, w(x), \qquad w(t) = (t - x_0)(t - x_1)\cdots(t - x_n).\]
+
+\subsection{I.1 · Llena los espacios (6 puntos: casos 1 y 2, 1 punto; pasos 1, 6 y 7, 1 punto cada uno; pasos 2 a 5, 0,5 cada uno)}
+
+\textbf{Caso 1.} Si x es uno de los nodos, entonces f(x) − P(x) = \hueco{6} y w(x) = \hueco{6}, así que la igualdad se cumple con cualquier ξ.
+
+\textbf{Caso 2.} Si x no es un nodo, entonces w(x) \hueco{6} 0 y podemos definir la función auxiliar
+
+\[g(t) = f(t) - P(t) - \bigl[f(x) - P(x)\bigr]\,\frac{w(t)}{w(x)}, \qquad t \in [a, b].\]
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  En cada nodo xᵢ: f(xᵢ) − P(xᵢ) = 0 porque \hueco{22}, y w(xᵢ) = 0 porque \hueco{22}. Por tanto g(xᵢ) = 0.
+\item
+  En el punto x: g(x) = f(x) − P(x) − {[}f(x) − P(x){]} · \hueco{6} = 0.
+\item
+  Entonces g se anula en \hueco{6} puntos distintos de {[}a, b{]}.
+\item
+  g ∈ C⁽ⁿ⁺¹⁾{[}a, b{]} porque f lo es y P y w son \hueco{14}.
+\item
+  Por el teorema de Rolle generalizado, existe ξ ∈ (a, b) con g⁽\hueco{6}⁾(ξ) = 0.
+\item
+  Como el grado de P es a lo más n, P⁽ⁿ⁺¹⁾(t) = \hueco{6}. Como w(t) = tⁿ⁺¹ + (términos de grado menor), w⁽ⁿ⁺¹⁾(t) = \hueco{6}.
+\item
+  Derivando n + 1 veces la definición de g y evaluando en ξ:
+\end{enumerate}
+
+\[0 = g^{(n+1)}(\xi) = f^{(n+1)}(\xi) - \underline{\qquad} - \bigl[f(x) - P(x)\bigr]\,\frac{\underline{\qquad\qquad}}{w(x)}\]
+
+y despejando se obtiene la fórmula del teorema. ∎
+
+\subsection{I.2 · ¿Dónde se usó\ldots? (2 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  ¿En qué paso se usa que \textbf{x no es un nodo}? ¿Qué se rompería si lo fuera? (1 punto)
+\item
+  ¿En qué paso se usa que los nodos son \textbf{distintos}? (1 punto)
+\end{enumerate}
+
+\subsection{I.3 · Úsalo (4 puntos)}
+
+Toma f(x) = 1/x con nodos 2, 3, 4 (parecido al ejemplo de clase, pero con nodos equiespaciados).
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Calcula L₀(2,5), L₁(2,5), L₂(2,5) y P(2,5) como fracciones. (1,5 puntos)
+\item
+  Calcula el error exacto f(2,5) − P(2,5) y w(2,5). (1 punto)
+\item
+  Con f‴(t) = −6/t⁴, encuentra el ξ que promete el teorema para x = 2,5 y verifica que está en (2, 4). (1,5 puntos)
+\end{enumerate}
+
+\begin{quote}
+Para el resto del parcial: en la fórmula del error, \textbf{quien escoge los nodos solo controla el factor w(x)}. El factor f⁽ⁿ⁺¹⁾(ξ)/(n+1)! lo pone la naturaleza (en nuestro caso, la demografía de Colombia).
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+Abre el cuaderno y corre las celdas 1, 2 y 3. La celda 1 te dice si los datos vinieron de internet o de la copia congelada. La celda 3 muestra algo que importa: entre 2016 y 2018 el crecimiento anual de Colombia pasó de 0,468 a 0,893 millones de personas por año (llegada de población migrante). A ojo la curva es suave; sus derivadas altas, no tanto.
+
+En cada ítem: \textbf{(a)} escribe tu predicción aquí \textbf{antes} de correr la celda; \textbf{(b)} corre la celda; \textbf{(c)} explica la diferencia entre lo que predijiste y lo que salió. La predicción equivocada no quita puntos; la explicación vacía, sí.
+
+Los nodos ``de Chebyshev'' del cuaderno son \textbf{los años enteros más cercanos} a los nodos de Chebyshev de {[}1960, 2020{]}: no tenemos datos en 1987,35.
+
+\subsection{II.1 · Pocos nodos (celda 4) · 3 puntos}
+
+Con k = 7 años: equiespaciados (1960, 1970, \ldots, 2020) contra los más cercanos a Chebyshev.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice:} ¿cuál tiene menor error máximo? ¿Cuántas veces menor? ¿En qué año estará el peor error?
+\end{enumerate}
+
+Predicción: \hueco{40}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  Obtenido: error máx. equiespaciados = \hueco{8} M en \hueco{6}; Chebyshev = \hueco{8} M en \hueco{6}.
+\item
+  Los dos peores errores caen en el mismo año. ¿Por qué ese año? Con 7 nodos, ¿qué domina el error: w(x) o la forma de los datos?
+\end{enumerate}
+
+\subsection{II.2 · Subir k (celda 5) · 4 puntos}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice} y llena tu columna antes de correr:
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+k
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+mi predicción: equiespaciados
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+obtenido: equiespaciados (año)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+mi predicción: Chebyshev
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+obtenido: Chebyshev (año)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+7 \filarespuesta & & & & \\
+13 \filarespuesta & & & & \\
+21 \filarespuesta & & & & \\
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  La celda también imprime P(1961) con 21 años equiespaciados. Anótalo y compáralo con el dato real (16,095 millones).
+\item
+  Con \textbf{más} datos reales, el error de los equiespaciados \textbf{creció}. Explica por qué con la fórmula del error y con lo visto en clase sobre el fenómeno de Runge. ¿Por qué no le pasa lo mismo a Chebyshev?
+\end{enumerate}
+
+\subsection{II.3 · ¿Dónde está el error? (celda 6) · 4 puntos}
+
+Con k = 13. El cuaderno mide w en la variable s = (año − 1990)/30, que lleva {[}1960, 2020{]} a {[}−1, 1{]}.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice:} con equiespaciados, ¿el error será mayor en los bordes (1960--1965 y 2015--2020) o en el centro (1985--1995)? ¿Cuántas veces más grande crees que es máx\textbar w\textbar{} en los bordes que en el centro? ¿Y con Chebyshev?
+\end{enumerate}
+
+Predicción: \hueco{40}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Llena con lo obtenido:
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+k = 13
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+error máx. bordes
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+error máx. centro
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+máx\textbar w\textbar{} bordes / máx\textbar w\textbar{} centro
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+constante de Lebesgue Λ
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+equiespaciados & & & & \\
+Chebyshev & & & & \\
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Explica la tabla con la fórmula del error. ¿Por qué con Chebyshev la razón bordes/centro es casi 1? Relaciónalo con el teorema de Chebyshev: el valor de máx\textbar w\textbar{} que imprime la celda para Chebyshev, ¿está por encima o por debajo de 2¹⁻¹³? ¿Por qué no es exactamente 2¹⁻¹³?
+\end{enumerate}
+
+\subsection{II.4 · Sé el agente (celda 7) · 3 puntos}
+
+Escoge tus propios 13 años para \textbf{ganarle a Chebyshev} (error máximo en 1960--2020 menor que el de los 13 años de Chebyshev).
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice:} escribe tus 13 años y por qué. ¿Qué año de la lista de Chebyshev moverías primero, y hacia dónde? (Pista: la celda 7, tal como viene, ya te dice en qué año está el peor error de Chebyshev.)
+\end{enumerate}
+
+Mis años: \hueco{40}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Anota cada intento (al menos 3):
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+intento
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+años que cambiaste
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+tu error máx.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿le ganaste?
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & \\
+2 \filarespuesta & & & \\
+3 \filarespuesta & & & \\
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Si le ganaste: ¿tu máx\textbar w\textbar{} quedó mayor o menor que el de Chebyshev? ¿Cómo puede ser que ganes con un máx\textbar w\textbar{} mayor? (Mira otra vez la fórmula del error: ¿de qué depende ξ?)
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+\textbf{Escenario inventado para este parcial.} El agente ``NodoBot'' no existe y su entrenamiento es ficticio. Lo que sí es real: sus 13 años los encontramos con una búsqueda de verdad (recocido simulado más búsqueda local) y \textbf{todos los números de la tabla salen de los datos reales}; los puedes verificar con la celda 8 del cuaderno.
+\end{quote}
+
+NodoBot juega muchos episodios. En cada uno escoge 13 años distintos entre 1960 y 2020 (su presupuesto), arma el polinomio de Lagrange y recibe la recompensa
+
+\[R = -\max_{\text{año}\,\in\,\{1960,\dots,2020\}} \bigl|P(\text{año}) - \text{dato}(\text{año})\bigr| .\]
+
+Después de entrenar, sus años son: \textbf{1960, 1962, 1966, 1970, 1978, 1983, 1989, 1991, 1999, 2005, 2011, 2015, 2020}. Para comparar, los de Chebyshev son 1960, 1962, 1965, 1970, 1976, 1983, 1990, 1997, 2004, 2010, 2015, 2018, 2020.
+
+\subsection{III.1 · ¿Verdadero o falso? (6 puntos, 0,75 cada una)}
+
+Para cada afirmación de NodoBot, di si es verdadera o falsa y \textbf{justifica con la teoría} (una o dos líneas). Una justificación del tipo ``la celda dice otra cosa'' vale la mitad; la razón teórica vale el resto.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0606}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+NodoBot reporta\ldots{}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+V/F
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+razón
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & ``Mi error máximo en 1960--2020 es 0,0754 M, menor que el de Chebyshev (0,1029 M) y unas 23 veces menor que el de los equiespaciados (1,714 M).'' & & \\
+2 & ``Como mi error es menor que el de Chebyshev, mi máx\textbar w\textbar{} (en la variable s) también tiene que ser menor que el de Chebyshev, 3,26 × 10⁻⁴, y hasta menor que 2⁻¹² ≈ 2,44 × 10⁻⁴.'' & & \\
+3 & ``Igual que Chebyshev, pongo más años cerca de los bordes: 4 de mis 13 años están en 1960--1970, contra 3 de los equiespaciados.'' & & \\
+4 & ``Mis años sirven para cualquier país: con los mismos 13 años y los datos de Perú también le gano a Chebyshev.'' & & \\
+5 & ``Con mis años también extrapolo bien: mi P(2025) = 26,23 M está a menos del 1 \% del dato real.'' & & \\
+6 & ``Mi constante de Lebesgue es 83,4, unas 33 veces la de Chebyshev (2,53). Si uno de mis datos tuviera un error de 0,01 M (10 000 personas), mi polinomio podría moverse hasta unos 0,83 M en algún año; el de Chebyshev, a lo más unos 0,025 M.'' & & \\
+7 & ``En una versión anterior la recompensa era −(error en mis 13 años escogidos). Esa versión alcanzó la recompensa perfecta, 0, con los años 1960, 1961, \ldots, 1972, así que ese conjunto es el mejor de todos.'' & & \\
+8 & ``En otra versión el error se medía solo en los años 1970--2010. Esa versión logró error máximo 0,0219 M, menor que el de Chebyshev en esos mismos años (0,0591 M); por tanto es el mejor polinomio para 1960--2020.'' & & \\
+\end{longtable}
+
+\subsection{III.2 · Inferencia (3 puntos)}
+
+Corre la celda 8. NodoBot le gana a Chebyshev con los datos de Colombia, pero con los datos de Perú pierde (0,5259 M contra 0,0761 M).
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  ¿Qué aprendió NodoBot: una propiedad de los \textbf{nodos} o una propiedad de \textbf{estos datos}? Usa la fórmula del error para explicar de qué depende lo que minimiza Chebyshev y de qué depende lo que minimiza NodoBot. (2 puntos)
+\item
+  Mira dónde puso NodoBot sus años alrededor de 1989--1991 y de 2015--2020, comparado con Chebyshev. Propón una explicación de por qué esos cambios le sirven con los datos de Colombia. (1 punto)
+\end{enumerate}
+
+\subsection{III.3 · Reward hacking y verificación (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  En la versión de la afirmación 7, ¿cuál es la recompensa de \textbf{cualquier} conjunto de 13 años? ¿Qué propiedad del polinomio de Lagrange lo garantiza? ¿Qué aprende un agente con esa recompensa? (1,5 puntos)
+\item
+  La versión de la afirmación 8 tiene error 65,4 M en el año 1960. Explica por qué, usando w(x) y el hecho de que sus 13 años están todos entre 1968 y 2016. Propón una regla para la malla donde se mide la recompensa que evite este truco. (1,5 puntos)
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+La idea de paper del curso: una biblioteca de demostraciones de métodos numéricos escritas como grafo por ustedes (pasos, razones, dependencias, distractores), sobre la que un agente aprende a demostrar; y, más en general, agentes de RL que aprenden las mismas decisiones que toma un estudiante de métodos numéricos. En este parcial, la decisión es \textbf{qué datos usar como nodos}.
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra herramienta) sobre \textbf{la interpolación polinómica hoy y la selección de puntos con IA}. Temas mínimos que debe cubrir tu búsqueda:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Interpolación baricéntrica} (la forma en que se evalúa Lagrange en la práctica hoy).
+\item
+  \textbf{Chebfun} y la idea de ``calcular con funciones'' usando nodos de Chebyshev.
+\item
+  \textbf{El algoritmo AAA} (aproximación racional, no polinómica).
+\item
+  \textbf{Qué hacer cuando los datos son equiespaciados y no puedes escoger dónde medir}: el teorema de imposibilidad de Platte, Trefethen y Kuijlaars, y los subconjuntos ``mock-Chebyshev''.
+\item
+  \textbf{Selección de puntos o sensores a partir de datos}: puntos de Fekete y de Leja aproximados, DEIM/QDEIM, ubicación de sensores con QR con pivoteo, diseño de experimentos.
+\item
+  \textbf{ML o RL para escoger nodos o puntos de muestreo} (¿existe?, ¿qué tan cerca está de nuestro NodoBot?).
+\end{itemize}
+
+\subsection{IV.1 · Síntesis de una página (4 puntos)}
+
+Escrita por ti, \textbf{sin IA}, a mano o en el computador. Debe responder: ¿qué se hace hoy cuando hay que interpolar muchos datos, y dónde quedan Lagrange y Chebyshev en ese panorama?
+
+\subsection{IV.2 · Cuatro fuentes auditadas (4 puntos, 1 por fuente)}
+
+Escoge 4 fuentes de tu búsqueda (al menos una sobre selección de puntos o ML/RL). Para cada una, \textbf{ábrela tú} y llena:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+fuente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿existe? (enlace o DOI)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+tipo (artículo, libro, software, tesis\ldots)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+autores y año
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿dice lo que la IA le atribuye? (cita una frase)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+conexión con el curso
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+Si una fuente que te dio la IA \textbf{no existe} o no dice lo que la IA afirma, anótala igual: encontrar eso también vale.
+
+\subsection{IV.3 · Preguntas guía (2 puntos)}
+
+Responde dos de las tres, en pocas líneas cada una:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  La fórmula del cuaderno evalúa Lagrange con un doble ciclo (unas n² operaciones por punto). ¿Qué cambia la fórmula baricéntrica y por qué se considera la forma estable de evaluar Lagrange?
+\item
+  Los datos de población son anuales: equiespaciados, no los escogemos. ¿Qué dice el teorema de imposibilidad de Platte, Trefethen y Kuijlaars sobre aproximar desde datos equiespaciados? ¿Nuestro truco de ``tomar los años más cercanos a Chebyshev'' es lo mismo que la idea mock-Chebyshev?
+\item
+  QR con pivoteo, DEIM o los puntos de Fekete aproximados escogen k filas de un conjunto grande de datos sin aprendizaje. ¿Qué podría aportar un agente de RL que esos métodos no aportan, y qué riesgo trae (piensa en la Parte III)?
+\end{enumerate}
+
+\subsection{IV.4 · Cierre (2 puntos)}
+
+¿Qué tendría que ser verdad para que nuestra idea (un agente que aprende a escoger nodos y, además, a demostrar por qué su elección funciona, usando la biblioteca de demostraciones del curso) fuera \textbf{nueva} en interpolación? Nombra al menos una cosa que encontraste que ya existe y una que no encontraste.
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}

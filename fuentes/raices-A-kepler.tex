@@ -1,0 +1,423 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Raíces A · Kepler}
+\begin{document}
+\cabecera{Raíces A · La ecuación de Kepler}{Bisección y Newton con datos de la NASA}{Métodos Numéricos · UNAL Manizales · parcial para la casa · 50 puntos · entrega y sustentación: martes 20 de octubre de 2026}
+En 1609 Kepler descubrió que, para saber dónde está un planeta en una fecha dada, hay que resolver la ecuación
+
+\[M = E - e\,\sin E\]
+
+donde M es la anomalía media (crece uniformemente con el tiempo), e es la excentricidad de la órbita (0 ≤ e \textless{} 1) y E es la anomalía excéntrica, la incógnita. No hay forma de despejar E: es el problema de búsqueda de raíces más famoso de la historia. Una vez tienes E, la posición angular real del cuerpo (la anomalía verdadera ν) sale de
+
+\[\tan\frac{\nu}{2} = \sqrt{\frac{1+e}{1-e}}\,\tan\frac{E}{2}\]
+
+El sistema JPL Horizons de la NASA publica e (columna \texttt{EC}), M (\texttt{MA}) y ν (\texttt{TA}) para cualquier cuerpo del Sistema Solar. Así que puedes hacer algo que pocas veces se hace en un curso: \textbf{resolver la ecuación con tus métodos y comprobar tu respuesta contra la de la NASA.}
+
+En todo el parcial: f(E) = E − e·sen E − M y f′(E) = 1 − e·cos E.
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\textbf{Nombre:} \hueco{38} \textbf{Documento:} \hueco{16}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_kepler.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{raices-A-kepler}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\subsection{I.1 · La ecuación de Kepler tiene exactamente una raíz (5 puntos)}
+
+\textbf{Teorema.} Si 0 ≤ e \textless{} 1 y 0 ≤ M \textless{} 2π, la función f(E) = E − e·sen E − M tiene \textbf{exactamente una} raíz en {[}0, 2π{]}.
+
+\textbf{Demostración (llena los espacios).}
+
+\emph{Existencia.} La función f es continua en {[}0, 2π{]} porque es \hueco{22} (1 pt).
+
+Evaluamos en los extremos:
+
+\begin{itemize}
+\tightlist
+\item
+  f(0) = 0 − e·sen 0 − M = \hueco{6} , que es ≤ 0.
+\item
+  f(2π) = 2π − e·sen(2π) − M = \hueco{6} , que es \textgreater{} 0 porque \hueco{14} (1 pt).
+\end{itemize}
+
+Como f cambia de signo (o se anula en E = 0), por el teorema de \hueco{22} existe E* en {[}0, 2π{]} con f(E*) = 0 (1 pt).
+
+\emph{Unicidad.} Derivamos: f′(E) = \hueco{14} (½ pt). Como \textbar cos E\textbar{} ≤ 1 y 0 ≤ e \textless{} 1, se tiene e·cos E ≤ e \textless{} 1, luego
+
+\[f'(E) = 1 - e\cos E \;\geq\; 1 - e \;>\; 0 .\]
+
+Entonces f es estrictamente \hueco{14} en {[}0, 2π{]}, y una función así no puede anularse dos veces. (Si hubiera dos raíces E₁ \textless{} E₂, el teorema de \hueco{14} daría un ξ entre ellas con f′(ξ) = 0, lo cual contradice f′ \textgreater{} 0.) (1 pt) ∎
+
+\textbf{Pregunta corta (½ pt).} ¿En qué renglón exacto se usó la hipótesis e \textless{} 1? ¿Qué pasaría con la cota f′(E) ≥ 1 − e si e = 1 y E = 0?
+
+\lineasrespuesta{3}
+
+\subsection{I.2 · Cuántas iteraciones necesita la bisección (4 puntos)}
+
+\textbf{Teorema (Burden, Teorema 2.1).} Si f es continua en {[}a, b{]} y f(a)·f(b) \textless{} 0, los puntos medios pₙ de la bisección cumplen
+
+\[|p_n - p| \;\leq\; \frac{b-a}{2^n}, \qquad n \geq 1 .\]
+
+\textbf{Demostración (llena los espacios).} En cada paso el intervalo se parte por la mitad y nos quedamos con la mitad donde hay cambio de signo. Así, el intervalo del paso n, {[}aₙ, bₙ{]}, mide
+
+\[b_n - a_n = \frac{b-a}{2^{\,\_\_\_\_}} \qquad (1\ \text{pt})\]
+
+y siempre contiene a la raíz p.~Como pₙ = (aₙ + bₙ)/2 es el punto medio, la distancia de pₙ a cualquier punto de {[}aₙ, bₙ{]} es a lo sumo \hueco{14} de la longitud del intervalo (1 pt). Por tanto \textbar pₙ − p\textbar{} ≤ ½·(bₙ − aₙ) = (b − a)/2ⁿ. ∎
+
+\textbf{Aplicación (2 pts).} Para Kepler usamos {[}a, b{]} = {[}0, 2π{]}. Encuentra el menor n tal que (b − a)/2ⁿ \textless{} 10⁻¹⁰. Muestra el despeje con logaritmos:
+
+\[\frac{2\pi}{2^n} < 10^{-10} \iff n > \_\_\_\_\_\_\_\_\_\_\_\_ \approx \_\_\_\_\_\_ \;\Rightarrow\; n = \_\_\_\_\]
+
+¿Este número depende de la excentricidad e o de M? Justifica en una línea.
+
+\lineasrespuesta{3}
+
+\subsection{I.3 · Puente con la unidad de interpolación: Newton es un polinomio osculante (3 puntos)}
+
+Sea Eₖ la aproximación actual. Considera el polinomio de Taylor de grado 1 de f alrededor de Eₖ:
+
+\[P_1(E) = f(E_k) + f'(E_k)\,(E - E_k).\]
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Verifica que P₁(Eₖ) = f(Eₖ) y P₁′(Eₖ) = f′(Eₖ). En el lenguaje de la unidad de interpolación, P₁ es el polinomio \textbf{osculante} con un solo nodo x₀ = Eₖ y m₀ = \hueco{6} .
+\item
+  (1 pt) Resuelve P₁(E) = 0 y llama Eₖ₊₁ a la solución. Escribe la fórmula que obtienes. ¿Qué método es?
+\item
+  (1 pt) Con el resto de Taylor, f(E) = P₁(E) + ½ f″(ξ)(E − Eₖ)². ¿Qué condición sobre f′(Eₖ) hace que el paso de Newton no se pueda dar, o sea gigantesco? Para Kepler, ¿en qué valores de E se acerca f′(E) = 1 − e·cos E a cero cuando e está cerca de 1?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+Abre el cuaderno \texttt{parcial\_kepler.ipynb} en Colab. \textbf{La Celda 1} consulta la API de JPL Horizons (NASA) y, si falla, usa una copia congelada del 15 de octubre de 2026. Los cuerpos son:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Cuerpo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+e (EC)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+M en grados (MA)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ν de la NASA en grados (TA)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Marte & 15 oct 2026 & 0,0934 & 106,2035 & 116,1084 \\
+Mercurio & 15 oct 2026 & 0,2056 & 252,1511 & 231,7943 \\
+Cometa Halley & 15 oct 2026 & 0,9680 & 194,0066 & 180,9094 \\
+Cometa Halley & 1 mar 1986 & 0,9673 & 0,2534 & 51,9316 \\
+Cometa Hale-Bopp & 15 oct 2026 & 0,9949 & 4,3618 & 165,6676 \\
+\end{longtable}
+
+(El cuaderno usa todas las cifras que da la NASA; aquí van redondeadas. Ojo: el cuaderno imprime con punto decimal.)
+
+En cada ítem: \textbf{(a) predice en papel ANTES de correr, (b) corre la celda, (c) explica.} Si tu predicción falla, no pierdes puntos por fallar: los pierdes si no explicas por qué.
+
+\subsection{II.1 · Bisección vs Newton con Marte --- Celda 3 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} usando tu resultado de I.2, ¿cuántas iteraciones hará la bisección con tol = 10⁻¹⁰? ¿Cuántas crees que necesitará Newton desde E₀ = M para Marte?
+  Bisección: \hueco{6} Newton: \hueco{6}
+\item
+  \textbf{Corre} la Celda 3 y anota: bisección \hueco{6} iteraciones, Newton \hueco{6} iteraciones, E ≈ \hueco{14} rad.
+\item
+  \textbf{Explica:} ¿por qué Newton necesita tan pocas? Usa que, para Marte, f′(E) = 1 − e·cos E está entre 1 − e ≈ 0,91 y 1 + e ≈ 1,09. Luego cambia \texttt{cuerpo} a \texttt{"Mercurio"} y a \texttt{"Halley\ (2026)"}: ¿cambia el número de iteraciones de la bisección? ¿Por qué?
+\end{enumerate}
+
+\subsection{II.2 · Tu ν contra la ν de la NASA --- Celda 4 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} si resuelves Kepler con tolerancia muy pequeña y calculas ν, ¿de qué orden será la diferencia con la \texttt{TA} de la NASA? Marca una: 10⁻¹ grados / 10⁻⁶ grados / 10⁻¹⁰ grados o menos.
+\item
+  \textbf{Corre} la Celda 4 y anota la mayor diferencia de la columna \texttt{diferencia\_grados}: \hueco{14} (¿para qué cuerpo?).
+\item
+  \textbf{Explica:} ¿qué demuestra este resultado sobre tu cálculo y sobre los datos? ¿Por qué no sale exactamente 0? (Piensa en la tolerancia y en la aritmética de punto flotante.)
+\end{enumerate}
+
+\subsection{II.3 · El cometa Hale-Bopp: cuando Newton se porta mal --- Celdas 5 y 5b (5 puntos)}
+
+Para Hale-Bopp hoy: e ≈ 0,9949 y M ≈ 0,0761 rad.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) \textbf{Predice a mano:} calcula f′(E₀) = 1 − e·cos E₀ con E₀ = M = 0,0761 (usa cos 0,0761 ≈ 0,99711). ¿Qué tan grande crees que será el primer paso de Newton? ¿Cuántas iteraciones necesitará Newton? ¿Y la bisección?
+\item
+  (1 pt) \textbf{Corre} la Celda 5 con \texttt{E0\_opcion\ =\ "M"}. Anota: E₁ = \hueco{6} , número de iteraciones de Newton \hueco{6} , de la bisección \hueco{6} . Mira la columna f′(Eₖ): ¿en qué iterados es casi cero?
+\item
+  (1 pt) Cambia a \texttt{E0\_opcion\ =\ "pi"}. ¿Cuántas iteraciones? ¿Los iterados saltan de un lado a otro o bajan ordenadamente hacia la raíz?
+\item
+  (2 pts) \textbf{Corre} la Celda 5b. Antes, \textbf{predice} cuáles M de la lista fallarán. Después responde: ¿en cuál M de la lista Newton no converge? En la gráfica, ¿cuántos de los 500 valores de M en (0; 0,5{]} fallan? ¿Falla la bisección alguna vez, y por qué no puede fallar (usa la Parte I)? Compara con Halley el 1 de marzo de 1986 (M ≈ 0,0044 rad, e ≈ 0,967): ahí Newton desde E₀ = M sí converge (córrelo en la Celda 3 con \texttt{cuerpo\ =\ "Halley\ (1\ mar\ 1986)"}). ¿Basta con ``M pequeño'' para que Newton falle?
+\end{enumerate}
+
+\subsection{II.4 · Leer el orden de convergencia --- Celda 6 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  \textbf{Predice:} ¿en qué columna (\texttt{razon\_lineal} o \texttt{razon\_cuadratica}) esperas ver una constante para la bisección? ¿Y para Newton?
+\item
+  \textbf{Corre} la Celda 6 (Marte). Anota la razón promedio de la bisección \hueco{6} y los dos valores de \texttt{razon\_cuadratica} de Newton \hueco{6} , \hueco{6} , y la constante teórica \hueco{6} .
+\item
+  \textbf{Explica:} la bisección no reduce el error a la mitad en \emph{cada} paso (mira las razones 7,6 y 6,0), pero ¿qué sí se reduce exactamente a la mitad cada vez? ¿Por qué Newton pasa de un error ≈ 3·10⁻⁴ a uno ≈ 5·10⁻⁹ en un paso? ¿Qué relación ves entre la \texttt{razon\_cuadratica} y la constante \textbar f″(E*)\textbar{} / (2\textbar f′(E*)\textbar)?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+\textbf{Escenario inventado para este parcial.} El agente no existe; los números de la tabla sí: los calculé con experimentos reales (Newton y bisección sobre una malla), y los puedes auditar con la Celda 7.
+\end{quote}
+
+Un agente de aprendizaje por refuerzo recibe un par (e, M) y escoge una acción: \textbf{bisección} en {[}0, 2π{]}, o \textbf{Newton} con uno de tres puntos iniciales: E₀ = M, E₀ = M + e·sen M o E₀ = π. Los dos métodos paran con tolerancia 10⁻¹⁰ (bisección: cota (b − a)/2ⁿ \textless{} 10⁻¹⁰; Newton: \textbar Eₖ₊₁ − Eₖ\textbar{} \textless{} 10⁻¹⁰).
+
+\textbf{Recompensa} = −(número de evaluaciones de f y f′). Cada iteración de Newton cuesta 2 (una f y una f′); la bisección cuesta 37 (36 iteraciones más f(a)). Si Newton no converge en 50 iteraciones se cobran 100 evaluaciones perdidas más 37 de rescate con bisección: 137.
+
+Se entrenó con 5 excentricidades y 1000 valores de M en {[}0,001; 2π − 0,001{]}. Esto es lo que aprendió (costo promedio por problema; menor es mejor):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+e
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+E₀ = M
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+E₀ = M + e·sen M
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+E₀ = π
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Bisección
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Acción aprendida}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0,1 & 7,32 & \textbf{5,96} & 8,96 & 37 & Newton, E₀ = M + e·sen M \\
+0,5 & 9,05 & \textbf{7,72} & 9,94 & 37 & Newton, E₀ = M + e·sen M \\
+0,9 & 10,84 & \textbf{8,90} & 10,18 & 37 & Newton, E₀ = M + e·sen M \\
+0,99 & 15,51 (18 fallos) & \textbf{9,57} & 10,12 & 37 & Newton, E₀ = M + e·sen M \\
+0,999 & 16,27 (24 fallos) & 10,22 (2 fallos) & \textbf{10,12} & 37 & Newton, E₀ = π \\
+\end{longtable}
+
+\subsection{III.1 · ¿Verdadero o falso? (6 puntos, 1 por fila)}
+
+El agente también ``reporta'' estas afirmaciones. Para cada una escribe \textbf{V} o \textbf{F} y justifica en una o dos líneas con la teoría (no basta con ``lo corrí''; puedes usar la Celda 7 para auditar).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0606}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.4242}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Lo que reporta el agente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+V / F
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A & ``Para e ≤ 0,9 la acción que elegí cuesta, en promedio, menos de la cuarta parte que la bisección.'' & & \\
+B & ``La bisección necesita más iteraciones para el cometa (e = 0,999) que para Marte, porque la órbita es más difícil.'' & & \\
+C & ``Con e = 0,99 y E₀ = π, Newton nunca necesitó más de 11 iteraciones en toda la malla.'' & & \\
+D & ``Cuando E₀ = M falla con e = 0,99 es porque para esos M la ecuación de Kepler no tiene raíz en {[}0, 2π{]}.'' & & \\
+E & ``Con E₀ = π, Newton converge en a lo sumo 11 iteraciones para \emph{cualquier} e \textless{} 1 y \emph{cualquier} M.'' & & \\
+F & ``Con e = 0,999, E₀ = M + e·sen M no convergió para 2 de los 1000 valores de M, y E₀ = π no falló ninguno.'' & & \\
+\end{longtable}
+
+\emph{Pista para E:} en la Celda 7 pon \texttt{e\ =\ 0.999999}, \texttt{M\_min\ =\ 1e-8}. ¿Qué le pasa a f′(E*) = 1 − e·cos E* cuando e → 1 y la raíz E* → 0?
+
+\subsection{III.2 · ¿Por qué aprendió E₀ = π para e grande? (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1 pt) Calcula f(π) y f′(π). ¿Qué signo tiene f(π) si 0 \textless{} M \textless{} π? ¿Por qué f′(π) = 1 + e es el valor \emph{más grande} posible de f′?
+\item
+  (1 pt) Calcula f″(E) = e·sen E. ¿Qué signo tiene en {[}0, π{]}? Dibuja f en {[}0, π{]}: creciente y \hueco{6} (cóncava / convexa).
+\item
+  (1 pt) Con el dibujo, explica por qué Newton desde E₀ = π (a la derecha de la raíz, donde f \textgreater{} 0) baja \emph{ordenadamente} hacia la raíz sin saltársela ni salirse del intervalo, mientras que desde E₀ = M ≈ 0 con e ≈ 1 el primer paso puede mandarte lejísimos (recuerda E₁ en II.3).
+\end{enumerate}
+
+\subsection{III.3 · Reward hacking y criterio de parada (3 puntos)}
+
+Un compañero propone dos ``mejoras'' al diseño:
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (1,5 pts) \emph{``Quitemos el criterio de parada y dejemos que el agente decida cuándo parar; la recompensa sigue siendo solo −(evaluaciones).''} ¿Qué aprende el agente? (Pista: ¿cuál es la acción que cuesta 0?) Si el agente devuelve E = M sin iterar, la ν resultante se equivoca en 4,82° para Marte y en 91,75° para Hale-Bopp. ¿Por qué tanto más en Hale-Bopp?
+\item
+  (1,5 pts) \emph{``Que pare cuando \textbar f(E)\textbar{} \textless{} 10⁻⁶, que es lo que de verdad queremos.''} Con los datos de Halley del 1 de marzo de 1986, la bisección para así en la iteración 17 con \textbar f(E)\textbar{} ≈ 1,4·10⁻⁷, pero el error en E es ≈ 3,5·10⁻⁶ (25 veces más grande) y el error en ν es ≈ 0,0012°. Explica la diferencia usando f(E) ≈ f′(E*)(E − E*) y f′(E*) ≈ 0,040. ¿Qué cantidad debería medir la recompensa o el criterio de parada para no dejarse engañar?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra herramienta; anótalo en tu bitácora) sobre \textbf{el estado del arte para resolver la ecuación de Kepler}: solvers clásicos y modernos, puntos iniciales, métodos de orden alto y si existen trabajos de aprendizaje automático o RL que aprendan puntos iniciales o solvers.
+
+\textbf{Entrega:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{(4 pts) Síntesis de una página, escrita por ti sin IA.} ¿Qué se sabe? ¿Qué problemas siguen abiertos? ¿Qué papel juegan el punto inicial y la excentricidad cercana a 1?
+\item
+  \textbf{(4 pts) Tabla de 4 fuentes auditadas} (al menos una debe ser un artículo de revista con revisión por pares y al menos una debe tratar de aprendizaje automático o búsqueda automática de fórmulas):
+\end{enumerate}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Referencia (autores, año, título, revista o repositorio)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Existe? (enlace o DOI que abriste)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tipo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Dice lo que la IA le atribuye? (cita la frase o página)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conexión con el curso (bisección, Newton, punto inicial, orden, osculantes\ldots)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  \textbf{(2 pts) Responde dos de estas tres preguntas guía:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    ¿Qué puntos iniciales recomienda la literatura clásica para e cercano a 1 y qué se demostró sobre E₀ = π? ¿Concuerda con lo que ``aprendió'' el agente de la Parte III?
+  \item
+    Los solvers modernos combinan Newton con una salvaguarda de bisección, o usan métodos de orden mayor que 2 (como el de Halley). ¿Qué ganan y qué pagan, en evaluaciones de f, f′ y f″, frente a Newton puro?
+  \item
+    ¿Hay trabajos que \emph{aprendan} un punto inicial (redes neuronales, regresión simbólica)? ¿Su punto inicial es una fórmula que un humano puede leer o una caja negra? ¿Cómo comparan su costo con el de los métodos clásicos?
+  \end{itemize}
+\item
+  \textbf{(2 pts) Cierre.} Nuestra idea de paper: agentes de RL que aprenden las mismas decisiones que un estudiante de métodos numéricos (qué método usar, dónde empezar, cuándo parar). \textbf{¿Qué tendría que ser verdad para que nuestra idea fuera nueva en tu tema?} Sé concreto: ¿qué no ha hecho nadie todavía según tus fuentes, y cómo lo comprobarías?
+\end{enumerate}
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}

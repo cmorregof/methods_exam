@@ -1,0 +1,460 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Los dos Hermite}
+\begin{document}
+\cabecera{Los dos Hermite}{Polinomios osculantes, cuadratura de Gauss–Hermite y la molécula de HCl}{Métodos Numéricos · UNAL Manizales · parcial para la casa · 50 puntos · entrega y sustentación: martes 20 de octubre de 2026}
+En física, ``Hermite'' casi siempre quiere decir los polinomios Hₙ del oscilador armónico (H₀ = 1, H₁ = 2x, H₂ = 4x² − 2, \ldots). En este curso, ``Hermite'' es el polinomio osculante, el que copia valores y derivadas. Tienen el mismo apellido pero son objetos distintos, y en este parcial vas a ver que se necesitan el uno al otro: \textbf{la regla de cuadratura de Gauss--Hermite, que usan químicos y físicos para calcular valores esperados en el oscilador, se demuestra con el osculante}. Después la vas a usar en una molécula real, el cloruro de hidrógeno (HCl), cuyas constantes vibracionales medidas vienen de la tabla de NIST.
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\textbf{Nombre:} \hueco{38} \textbf{Documento:} \hueco{16}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_hermite\_oscilador.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{hermite-hcl}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\textbf{Hechos que puedes usar sin demostrar.}
+
+\begin{itemize}
+\tightlist
+\item
+  (H1) Hₙ tiene n raíces reales y distintas x₁ \textless{} x₂ \textless{} \ldots{} \textless{} xₙ, y su coeficiente principal es 2ⁿ.
+\item
+  (H2) Ortogonalidad: si p es un polinomio de grado \textbf{menor que n}, entonces ∫ e\textsuperscript{−x²} Hₙ(x) p(x) dx = 0 (las integrales van de −∞ a ∞).
+\item
+  (H3) Osculante (forma de Burden, vista en clase). Sean Lⱼ los polinomios de Lagrange en los nodos x₁, \ldots, xₙ. El único polinomio de grado ≤ 2n − 1 con H(xⱼ) = f(xⱼ) y H′(xⱼ) = f′(xⱼ) es
+\end{itemize}
+
+\[H(x)=\sum_{j=1}^{n} f(x_j)\,\underbrace{\big[1-2(x-x_j)L_j'(x_j)\big]L_j(x)^2}_{H_j(x)}\;+\;\sum_{j=1}^{n} f'(x_j)\,\underbrace{(x-x_j)L_j(x)^2}_{\hat H_j(x)}\]
+
+\[f(x)-H(x)=\frac{f^{(2n)}(\xi(x))}{(2n)!}\prod_{k=1}^{n}(x-x_k)^2 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  (H4) Valor medio para integrales: si u(x) ≥ 0 y φ es continua, entonces ∫ φ(x) u(x) dx = φ(η) ∫ u(x) dx para algún η.
+\end{itemize}
+
+\textbf{Teorema (Gauss--Hermite).} Sean x₁, \ldots, xₙ las raíces de Hₙ. Para todo polinomio f de grado ≤ 2n − 1,
+
+\[\int_{-\infty}^{\infty} e^{-x^2} f(x)\,dx=\sum_{j=1}^{n} w_j\,f(x_j)\]
+
+\[w_j=\int_{-\infty}^{\infty} e^{-x^2}L_j(x)^2\,dx>0 .\]
+
+Y si f tiene 2n derivadas continuas, el error es
+
+\[\int_{-\infty}^{\infty} e^{-x^2} f(x)\,dx-\sum_{j=1}^{n} w_j f(x_j)=\frac{f^{(2n)}(\eta)}{(2n)!}\int_{-\infty}^{\infty} e^{-x^2}\prod_{k=1}^{n}(x-x_k)^2\,dx .\]
+
+\subsection{I.1 · Llena los espacios (7 puntos)}
+
+\textbf{Paso 1.} Multiplica el osculante por e\textsuperscript{−x²} e integra. Queda
+
+\[\int e^{-x^2}H(x)\,dx=\sum_{j} f(x_j)\,A_j+\sum_{j} f'(x_j)\,B_j,\qquad A_j=\int e^{-x^2}H_j(x)\,dx,\quad B_j=\int e^{-x^2}(x-x_j)L_j(x)^2\,dx .\]
+
+\textbf{Paso 2 (la clave).} Fija j. El polinomio q(x) = (x − xⱼ) Lⱼ(x) tiene grado \hueco{8} y se anula en \hueco{24}. Hₙ tiene ese mismo grado y esas mismas raíces, así que q(x) = c · Hₙ(x) para alguna constante c.~Para hallar c, deriva y evalúa en xⱼ:
+
+q′(xⱼ) = Lⱼ(xⱼ) + (xⱼ − xⱼ) Lⱼ′(xⱼ) = \hueco{8}, y por tanto c = \hueco{16}.
+
+\textbf{Paso 3.} Entonces
+
+\[B_j=\int e^{-x^2}\,\big[(x-x_j)L_j(x)\big]\,L_j(x)\,dx = c\int e^{-x^2}H_n(x)\,\underline{\hspace{2cm}}\,dx=\underline{\hspace{1.5cm}}\]
+
+por el hecho (H\hueco{4}), porque el grado de Lⱼ es \hueco{8}, que es menor que n.
+
+\textbf{Paso 4.} Como Hⱼ = Lⱼ² − 2Lⱼ′(xⱼ)(x − xⱼ)Lⱼ², se tiene Aⱼ = ∫ e\textsuperscript{−x²} Lⱼ² dx − 2Lⱼ′(xⱼ) · \hueco{8} = wⱼ. Además wⱼ \textgreater{} 0 porque \hueco{40}.
+
+\textbf{Paso 5 (exactitud).} Si f es un polinomio de grado ≤ 2n − 1, entonces H = f por \hueco{24} (cita H3). Por tanto ∫ e\textsuperscript{−x²} f dx = ∫ e\textsuperscript{−x²} H dx = Σ wⱼ f(xⱼ). \textbf{Las derivadas f′(xⱼ) desaparecieron: la regla solo necesita valores.}
+
+\textbf{Paso 6 (error).} Restando, ∫ e\textsuperscript{−x²}(f − H) dx = ∫ {[}f\textsuperscript{(2n)}(ξ(x))/(2n)!{]} · e\textsuperscript{−x²} ∏(x − xₖ)² dx. Como la función \hueco{24} es ≥ 0, el hecho (H\hueco{4}) da el error del teorema.
+
+\textbf{Remate.} Por (H1), ∏(x − xₖ) = Hₙ(x) / \hueco{8}. Usando el dato ∫ e\textsuperscript{−x²} Hₙ(x)² dx = 2ⁿ n! √π, el error queda
+
+\[\text{error}=\frac{f^{(2n)}(\eta)}{(2n)!}\cdot\frac{n!\,\sqrt{\pi}}{\underline{\hspace{1.2cm}}} .\]
+
+\subsection{I.2 · Pruébalo a mano con n = 2 (3 puntos)}
+
+En el estado base del oscilador (ħ = m = ω = 1), la densidad de probabilidad es \textbar ψ₀(x)\textbar² = e\textsuperscript{−x²}/√π, así que ⟨f⟩ = (1/√π) ∫ e\textsuperscript{−x²} f(x) dx. Datos: ∫ e\textsuperscript{−x²} dx = √π, ∫ x² e\textsuperscript{−x²} dx = √π/2, y el valor exacto es ⟨x⁴⟩ = 3/4.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  Con H₂ = 4x² − 2, halla los nodos x₁, x₂ y calcula w₁ = ∫ e\textsuperscript{−x²} L₁(x)² dx. Escribe L₁ explícitamente. (Por simetría, w₂ = w₁.)
+\item
+  Calcula la aproximación de ⟨x⁴⟩ con la regla de 2 nodos.
+\item
+  Calcula el error con la fórmula del teorema (aquí f⁽⁴⁾ es constante, así que no necesitas η). ¿Aproximación + error = 3/4?
+\end{enumerate}
+
+\subsection{I.3 · ¿Dónde se usó\ldots? (2 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  ¿En qué paso se usó que los nodos son \textbf{las raíces de Hₙ} y no unos nodos cualesquiera? Si tomas los nodos −1, 0, 1, ¿qué pasa con los Bⱼ? (Vas a ver la respuesta numérica en la Parte III, acción C.)
+\item
+  ¿En qué paso hace falta que e\textsuperscript{−x²} ∏(x − xₖ)² no cambie de signo? ¿Qué se perdería si cambiara?
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+\textbf{Los datos.} NIST Chemistry WebBook, página \emph{Hydrogen chloride}, tabla \emph{Constants of diatomic molecules} (compilación de Huber y Herzberg, 1979), estado fundamental X ¹Σ⁺ de H³⁵Cl: ωe = 2990,9463 cm⁻¹, ωe·xe = 52,8186 cm⁻¹, ωe·ye = 0,22437 cm⁻¹, ωe·ze = −0,01218 cm⁻¹, rₑ = 1,274552 Å. URL: https://webbook.nist.gov/cgi/cbook.cgi?ID=C7647010\&Mask=1000 (consultada el 15 oct 2026; el cuaderno trae una copia congelada por si la página falla).
+
+\textbf{El modelo (te lo regalamos).} Mide la distancia en unidades de ℓ = √(ħ/(μω)) y la energía en unidades de ħω (= ωe). Entonces el potencial armónico es V\_arm(x) = x²/2 y el de Morse es
+
+\[V_M(x)=D\,\big(1-e^{-a x}\big)^2,\qquad D=\frac{\omega_e}{4\,\omega_e x_e}\approx 14{,}157,\qquad a=\frac{1}{\sqrt{2D}}\approx 0{,}18793 .\]
+
+(Con a = 1/√(2D), V\textsubscript{M} y V\_arm tienen la misma curvatura en x = 0.) La diferencia es g(x) = V\textsubscript{M}(x) − x²/2.
+
+\textbf{Receta 1 (primer orden).} Un término extra W(x) corre el nivel base en ⟨ψ₀\textbar W\textbar ψ₀⟩ = (1/√π) ∫ e\textsuperscript{−x²} W(x) dx.
+
+\textbf{Receta 2 (segundo orden, solo para un término cúbico b·x³).} Lo corre en −(11/8) b².
+
+En cada ítem: \textbf{(a) predice en esta guía antes de correr}, \textbf{(b) corre la celda}, \textbf{(c) explica} la diferencia entre lo que predijiste y lo que salió.
+
+\subsection{II.1 · La regla y ⟨x⁴⟩ --- Celdas 3, 4 y 5 (4 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice.} En la Celda 4, ¿cuál de las tres columnas de pesos debería dar 0, según el Paso 3? ¿Cuál es el menor n con el que la regla da ⟨x⁴⟩ = 3/4 exacto, y qué da con n = 2?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  \textbf{Corre.} Completa la única línea de la Celda 3 (la regla (1/√π) Σ wⱼ g(xⱼ)) y corre las Celdas 3, 4 y 5.
+\item
+  \textbf{Explica.} ¿Por qué la columna que debería ser 0 da números como 10⁻¹⁷ y no 0? Cambia k = 6 en la Celda 5: ¿qué n mínimo aparece ahora y por qué? Cambia k = 5: ¿por qué sale exacto incluso con n = 1?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\subsection{II.2 · La corrección de Morse con n nodos --- Celda 6 (4 puntos)}
+
+La forma cerrada existe porque en la gaussiana ⟨e\textsuperscript{−kx}⟩ = e\textsuperscript{k²/4}: ⟨g⟩ = D(1 − 2e\textsuperscript{a²/4} + e\textsuperscript{a²}) − 1/4.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice.} e\textsuperscript{−ax} es una función entera (todas sus derivadas existen y son acotadas cerca de 0). Usa la fórmula del error de la Parte I con η ≈ 0 y el dato g\textsuperscript{(2n)}(0) = D a\textsuperscript{2n}(4ⁿ − 2) para n ≥ 2: al pasar de n a n + 1 nodos, ¿el error se divide por 2, por 10, por 100 o por más? ¿Con cuántos nodos crees que se llega al límite de la máquina (ε ≈ 2,2 × 10⁻¹⁶)?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  \textbf{Corre} la Celda 6. Mira las dos columnas de error y la gráfica.
+\item
+  \textbf{Explica.} ¿Qué tan cerca está la estimación de la Parte I del error real? Desde n = 8 las dos columnas de error se separan: con el valor ``ingenuo'' el error se estanca en unos 3 × 10⁻¹⁵, y con el ``estable'' baja hasta el orden de 10⁻¹⁶. Las dos fórmulas son algebraicamente idénticas. ¿Cuál de los temas del curso explica la diferencia? Señala la resta culpable.
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\subsection{II.3 · ¿Cuánto se corre el nivel base? --- Celda 7 (3 puntos)}
+
+Taylor de Morse alrededor de 0 (usa D·a² = 1/2): V\textsubscript{M}(x) = x²/2 − (a/2) x³ + (7/24) a² x⁴ + \ldots{}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice.} Según la receta 1, ¿el nivel base sube o baja? Según la fórmula exacta de Morse, E\textsubscript{v} = ωe(v + ½) − ωe·xe(v + ½)², ¿cuántos cm⁻¹ se corre E₀ respecto al armónico?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  \textbf{Corre} la Celda 7, con \texttt{incluir\_cubico\ =\ False} y después con \texttt{True}.
+\item
+  \textbf{Explica.} ¿Por qué la receta 1 y Morse exacto dan signos contrarios? ¿Por qué el término cúbico no aporta nada a primer orden? (Piensa en paridad: ¿cuánto vale ⟨x³⟩?) ¿Qué pasa cuando sumas la receta 2?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\subsection{II.4 · La frecuencia fundamental de HCl --- Celda 8 (3 puntos)}
+
+La fundamental es la transición v = 0 → 1: ν = E₁ − E₀. Para el armónico, ν = ωe; para Morse, ν = ωe − 2ωe·xe. La ``observada'' se calcula con todas las constantes de NIST, que vienen de ajustar las bandas infrarrojas medidas.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice.} ¿Qué error relativo (en \%) esperas del modelo armónico? ¿Y del de Morse? ¿Cuántos niveles ligados tiene el pozo de Morse? (Pista: los niveles existen mientras E\textsubscript{v} siga creciendo con v.)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  \textbf{Corre} la Celda 8.
+\item
+  \textbf{Explica.} ¿Por qué el armónico \textbf{sobreestima} la frecuencia? Mira en la tabla cómo se separan E\_arm y E\_Morse al subir v. ¿A qué longitud de onda (en μm) absorbe HCl su fundamental?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+\textbf{Escenario inventado para este parcial.} Los números de la tabla sí están calculados de verdad, pero el agente no existe.
+\end{quote}
+
+Un agente de RL tiene un \textbf{presupuesto de 6 condiciones} para estimar valores esperados en el estado base, ⟨f⟩ = (1/√π) ∫ e\textsuperscript{−x²} f(x) dx. Una condición es un valor f(xⱼ) o una derivada f′(xⱼ). En cada acción escoge dónde poner las condiciones y usa la regla que integra exactamente el polinomio (Lagrange u osculante) que pasa por ellas. Su recompensa es −\textbar error\textbar{} en ⟨g⟩ = ⟨V\textsubscript{M} − V\_arm⟩ de HCl (valor exacto 0,0078276501608889). Las acciones E y F están como referencia.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Acción
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Condiciones
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Pesos de las derivadas
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+⟨x⁴⟩ (exacto 0,75)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+⟨x⁶⟩ (exacto 1,875)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbar error\textbar{} en ⟨g⟩ de HCl
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A · Gauss--Hermite n = 6 & 6 valores & --- & 0,75 & 1,875 & 2,7 × 10⁻¹² \\
+B · osculante en los 3 nodos de H₃ & 3 valores + 3 derivadas & 0, 0, 0 & 0,75 & 1,125 & 4,1 × 10⁻⁵ \\
+C · osculante en −1, 0, 1 & 3 valores + 3 derivadas & −0,0625; 0; 0,0625 & 0,75 & 1,000 & 4,8 × 10⁻⁵ \\
+D · 6 nodos equiespaciados en {[}−2,5; 2,5{]} & 6 valores & --- & 0,75 & 1,984 & 5,9 × 10⁻⁶ \\
+E · Gauss--Hermite n = 3 & 3 valores & --- & 0,75 & 1,125 & 4,1 × 10⁻⁵ \\
+F · Gauss--Hermite n = 2 & 2 valores & --- & 0,25 & 0,125 & 5,2 × 10⁻³ \\
+\end{longtable}
+
+\textbf{El agente aprendió a escoger A.}
+
+\subsection{III.1 · ¿Verdadero o falso? (6 puntos, 1 cada una)}
+
+Para cada afirmación del ``reporte del agente'', escribe V o F y \textbf{justifícala con la teoría} en una o dos líneas. Un V o F sin razón no vale.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ``Con n = 2 nodos de Gauss--Hermite, la regla da exactamente ⟨x⁵⟩, aunque 5 es mayor que 2n − 1 = 3.''
+\item
+  ``Con n = 2 nodos la regla es exacta para todo polinomio de grado ≤ 5.''
+\item
+  ``La acción B gasta 6 condiciones y rinde exactamente lo mismo que E con 3: sus 3 derivadas no aportan nada.''
+\item
+  ``B y C usan 6 condiciones cada una, así que son exactas para todo polinomio de grado ≤ 2·6 − 1 = 11.''
+\item
+  ``Pasar de 3 a 6 nodos de Gauss--Hermite (de E a A) baja el error de ⟨g⟩ más o menos a la mitad.''
+\item
+  ``En C las derivadas sí cuentan (sus pesos no son todos 0), porque −1, 0, 1 no son las raíces de H₃.''
+\end{enumerate}
+
+\subsection{III.2 · Inferencia (3 puntos)}
+
+¿Por qué el agente aprendió A y no B, si las dos gastan 6 condiciones? Responde con el número 2n − 1 y con el Paso 3 de la Parte I. ¿Y por qué A le gana a D, que también usa 6 valores?
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\subsection{III.3 · Reward hacking (3 puntos)}
+
+Una versión anterior del agente se evaluaba sobre la familia \{x³, x⁵, sin x\}, en vez de ⟨g⟩, y pagaba un pequeño costo por cada condición usada. Ese agente aprendió a usar \textbf{un solo nodo} (Gauss--Hermite n = 1, el nodo x = 0) y reportó ``error 0 en todas las pruebas''.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  ¿Por qué obtuvo error 0 de verdad? b) ¿Qué error tiene esa acción en ⟨x⁴⟩ y en ⟨g⟩ de HCl? (Calcúlalo: no hace falta el computador.) c) Propón un cambio concreto a la familia de prueba para que esta trampa deje de funcionar.
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra herramienta) sobre \textbf{cuadratura de Gauss y Gauss--Hermite en física y química cuántica}: la representación de variable discreta (DVR), los métodos espectrales y pseudoespectrales para la ecuación de Schrödinger, y trabajos de ML/RL que escogen bases, mallas o nodos en problemas cuánticos.
+
+Algunos puntos de partida que el profesor verificó que existen. Igual tienes que auditarlos, porque que existan no quiere decir que digan lo que alguien les atribuye:
+
+\begin{itemize}
+\tightlist
+\item
+  G. H. Golub y J. H. Welsch, ``Calculation of Gauss quadrature rules'', \emph{Math. Comp.} 23 (1969), 221--230.
+\item
+  J. C. Light, I. P. Hamilton y J. V. Lill, ``Generalized discrete variable approximation in quantum mechanics'', \emph{J. Chem. Phys.} 82 (1985), 1400--1409.
+\item
+  D. T. Colbert y W. H. Miller, ``A novel discrete variable representation for quantum mechanical reactive scattering via the S-matrix Kohn method'', \emph{J. Chem. Phys.} 96 (1992), 1982--1991.
+\item
+  J. Yang et al., ``Reinforcement Learning for Adaptive Mesh Refinement'', arXiv:2103.01342 (2021).
+\end{itemize}
+
+\subsection{IV.1 · Síntesis (4 puntos)}
+
+Una página escrita \textbf{por ti, sin IA}, que responda las preguntas guía:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  ¿Qué es una DVR y qué tiene que ver con los nodos de Gauss y los Lⱼ de la Parte I? (Pista: ¿qué le pasa a la matriz del potencial cuando la calculas con la regla de cuadratura?)
+\item
+  ¿Por qué los métodos espectrales convergen ``exponencialmente'' para funciones suaves, y cómo se relaciona con lo que viste en la Celda 6?
+\item
+  ¿Hay trabajos donde un agente de RL o un modelo de ML escoja la base, la malla o los nodos en un problema cuántico? ¿Qué usan como recompensa? ¿Tienen riesgo de reward hacking como el de III.3?
+\end{enumerate}
+
+\subsection{IV.2 · Cuatro fuentes auditadas (4 puntos, 1 por fuente)}
+
+Al menos \textbf{dos} tienen que ser fuentes que encontraste tú, no de la lista de arriba.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Referencia (autores, año, título)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Existe? (DOI/enlace)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tipo (artículo, libro, preprint\ldots)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Dice lo que la herramienta le atribuye?
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conexión con el curso
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+\subsection{IV.3 · Nuestra idea en tu tema (4 puntos)}
+
+La idea de paper del curso es una biblioteca de demostraciones escritas como grafo (pasos, razones, dependencias, distractores), sobre la que un agente aprende a demostrar, más agentes que toman las mismas decisiones que un estudiante de métodos numéricos.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\item
+  (2 puntos) Escribe la demostración de la Parte I como grafo: una lista de 6 a 8 nodos (paso + razón), con flechas ``depende de'', e incluye \textbf{un distractor}: un paso que suene plausible pero sea falso (por ejemplo, una razón equivocada para que Bⱼ = 0).
+\item
+  (2 puntos) \textbf{¿Qué tendría que ser verdad para que nuestra idea fuera nueva en tu tema?} Piensa en un agente que aprenda a escoger nodos o bases para problemas cuánticos y que además ``sepa por qué'' (que pueda citar el Paso 3 o la fórmula del error). ¿Qué encontraste, o no encontraste, en tu búsqueda que lo haga nuevo o ya hecho?
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\lineasrespuesta{3}
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}

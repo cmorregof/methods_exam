@@ -1,0 +1,64 @@
+% Preámbulo de los parciales · XeLaTeX · mismo estilo de los labs (rl_metodos/docs/curso/tex/preambulo.tex)
+% Tipografía: Inter (cubre subíndices y griegas Unicode), con DejaVu Sans para los pocos símbolos que le faltan.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=20mm,top=18mm,bottom=20mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Inter}[BoldFont={Inter SemiBold}, ItalicFont={Inter Italic}, BoldItalicFont={Inter SemiBold Italic}, Scale=0.95]
+\setsansfont{Inter}
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+\newfontfamily\dv{DejaVu Sans}[Scale=0.9]
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\usepackage{polyglossia}\setdefaultlanguage{spanish}
+\usepackage{xcolor,booktabs,longtable,array,calc,tabularx,enumitem,parskip,microtype,titlesec,fancyhdr,newunicodechar}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\emergencystretch=3em
+\providecommand{\tightlist}{\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-1}
+
+\newunicodechar{∈}{{\dv ∈}}
+\newunicodechar{∎}{{\dv ∎}}
+\newunicodechar{⟨}{{\dv ⟨}}
+\newunicodechar{⟩}{{\dv ⟩}}
+\newunicodechar{☐}{{\dv ☐}}
+\newunicodechar{✔}{{\dv ✔}}
+\newunicodechar{✘}{{\dv ✘}}
+\AtBeginDocument{\def\square{\mbox{\dv ☐}}}
+
+\definecolor{tinta}{HTML}{1F2933}
+\definecolor{acento}{HTML}{B7410E}
+\definecolor{suave}{HTML}{F4F1EC}
+\definecolor{gris}{HTML}{6B7280}
+\definecolor{linea}{HTML}{D6D0C6}
+\color{tinta}
+
+\titleformat{\section}{\Large\bfseries\color{acento}}{}{0em}{}
+\titleformat{\subsection}{\large\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.4em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.25em}
+\setlist{nosep, leftmargin=1.4em, itemsep=2pt}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\LTpre}{6pt}\setlength{\LTpost}{6pt}
+
+% citas: el escenario inventado y las notas
+\renewenvironment{quote}{\begin{tcolorbox}[colback=suave, colframe=linea, boxrule=0.5pt, arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt]}{\end{tcolorbox}}
+% código corto
+\let\oldverbatim\verbatim
+\let\endoldverbatim\endverbatim
+
+% espacios para escribir
+\newcommand{\hueco}[1]{\rule[-1.5pt]{\dimexpr #1\dimexpr 0.33em\relax\relax}{0.45pt}}
+\newcommand{\lineasrespuesta}[1]{\par\vspace{2pt}{\color{linea}\foreach\i in {1,...,#1}{\vspace{0.75cm}\hrule height 0.5pt}}\par\vspace{4pt}}
+\newcommand{\filarespuesta}{\rule{0pt}{1.25cm}}
+
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\small\color{gris}\docpie\ · página \thepage}
+
+\newcommand{\cabecera}[3]{%
+  {\huge\bfseries\color{acento}#1\par}\vspace{4pt}
+  {\large #2\par}\vspace{2pt}
+  {\small\color{gris}#3\par}\vspace{6pt}
+  {\color{linea}\hrule height 0.6pt}\vspace{8pt}}

@@ -1,0 +1,470 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Parcial 1 · Raíces B · CO₂}
+\begin{document}
+\cabecera{Raíces B · ¿Cuándo cruzará el CO₂ las 450 ppm?}{Punto fijo y secante con datos de NOAA (Mauna Loa)}{Métodos Numéricos · UNAL Manizales · parcial para la casa · 50 puntos · entrega y sustentación: martes 20 de octubre de 2026}
+Desde 1958, en el volcán Mauna Loa (Hawái) se mide el CO₂ del aire todos los días: es la famosa \emph{curva de Keeling}. Hoy va por unas 427 ppm y sube cerca de 3 ppm por año, pero no sube derecho: cada año ``respira'' (baja en el verano del norte, cuando las plantas absorben CO₂, y sube en invierno). Vas a usar esos datos reales (NOAA GML y Scripps) para resolver una ecuación muy concreta: \textbf{¿en qué fecha llega a 450 ppm?} La respiración anual hace que la curva cruce 450 \textbf{varias veces}, y por eso escoger el método y el punto inicial importa.
+
+\textbf{Importante:} la fecha que vas a calcular es la del \textbf{modelo} que ajustamos (una parábola más una onda anual). \textbf{No es una predicción climática oficial.}
+
+\textbf{El modelo} (te lo da el cuaderno con \texttt{numpy.linalg.lstsq}, que escoge los 5 números para que la curva quede lo más cerca posible de los datos; no necesitas saber cómo lo hace):
+
+\[c(t) = a_0 + a_1 (t-2000) + a_2 (t-2000)^2 + A\,\sin(2\pi t) + B\,\cos(2\pi t)\]
+
+\[c'(t) = a_1 + 2a_2 (t-2000) + 2\pi A\cos(2\pi t) - 2\pi B\sin(2\pi t)\]
+
+Con datos de enero de 1990 a agosto de 2026: a₀ ≈ 369,037, a₁ ≈ 1,8067, a₂ ≈ 0,018377, A ≈ 2,8128, B ≈ −0,8951 (error típico del ajuste: 0,81 ppm). t es el año decimal: t = 2033,5 es más o menos el 1 de julio de 2033.
+
+\textbf{Los dos métodos}, para f(t) = c(t) − 450:
+
+\[\text{Punto fijo con relajación } (K>0):\qquad t_{n+1} = g(t_n) = t_n - \frac{c(t_n)-450}{K}\]
+
+\[\text{Secante:}\qquad t_{k+1} = t_k - f(t_k)\,\frac{t_k - t_{k-1}}{f(t_k) - f(t_{k-1})}\]
+
+\section{Reglas del parcial}
+
+Se entrega el \textbf{martes 20 de octubre al empezar la clase}, escrito a mano en esta misma guía, y se sustenta ese mismo día.
+
+\textbf{Nombre:} \hueco{38} \textbf{Documento:} \hueco{16}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Individual.} Puedes discutir ideas con compañeros, pero lo que entregas lo escribes tú, con tus palabras.
+\item
+  \textbf{El cuaderno de Colab} de este parcial es \texttt{parcial\_raices\_co2.ipynb}. Ábrelo desde el repositorio del curso, \textbf{github.com/cmorregof/methods\_exam}, carpeta \texttt{raices-B-co2}, con el botón «Open in Colab», y corre las celdas en orden. Antes de cada celda, escribe tu predicción en esta guía: la predicción escrita después de correr no cuenta.
+\item
+  \textbf{Puedes usar IA, y te audito.} Si la usas, llena la bitácora del final: qué le preguntaste, qué te respondió y qué corregiste o comprobaste tú. Usar IA no baja la nota. Lo que la baja es entregar algo que no sabes explicar.
+\item
+  \textbf{Sustentación (martes, 10 minutos).} Se sortea un punto de tu parcial y lo explicas en el tablero, sin la guía en la mano, con una variante (otro dato, otro valor inicial, otro nodo). La nota escrita se multiplica por un factor: 1 si lo explicas y lo reproduces; 0,6 si lo explicas a medias; 0,2 si no puedes explicar lo que entregaste.
+\item
+  \textbf{Puntaje.} Parte I: 12 puntos. Parte II: 14. Parte III: 12. Parte IV: 12. Total: 50. La nota es puntos ÷ 10.
+\item
+  \textbf{Qué cuenta.} Una respuesta correcta sin justificación vale poco. Una justificación clara con un error de cuenta vale mucho. Si algo te parece mal planteado, dilo y explica por qué: eso también se califica.
+\end{itemize}
+
+\section{Parte I · Completar una demostración (12 puntos)}
+
+\textbf{Teorema (punto fijo).} Sea g continua en {[}a, b{]}, derivable en (a, b), con:
+
+\begin{itemize}
+\tightlist
+\item
+  (H1) g(t) ∈ {[}a, b{]} para todo t ∈ {[}a, b{]}, y
+\item
+  (H2) existe k con 0 \textless{} k \textless{} 1 tal que \textbar g′(t)\textbar{} ≤ k para todo t ∈ (a, b).
+\end{itemize}
+
+Entonces g tiene \textbf{un único} punto fijo p en {[}a, b{]} y, para cualquier p₀ ∈ {[}a, b{]}, la sucesión pₙ = g(pₙ₋₁) converge a p, con
+
+\[|p_n - p| \le k^n \max\{\,p_0 - a,\; b - p_0\,\}.\]
+
+\subsection{I.1 · Existencia (3 puntos)}
+
+Sea h(t) = g(t) − t, que es continua en {[}a, b{]}.
+
+\begin{itemize}
+\tightlist
+\item
+  Por (H1), g(a) ≥ a, así que h(a) = g(a) − a \hueco{6} 0.
+\item
+  Por (H1), g(b) ≤ b, así que h(b) \hueco{6} 0.
+\item
+  Por el teorema de \hueco{22}, existe p ∈ {[}a, b{]} con h(p) = \hueco{6}, es decir, g(p) = \hueco{6}.
+\end{itemize}
+
+\subsection{I.2 · Unicidad (2 puntos)}
+
+Supón que p y q son dos puntos fijos distintos en {[}a, b{]}. Por el teorema de \hueco{22} existe ξ entre p y q tal que
+
+\[|p - q| = |g(p) - g(q)| = |g'(\xi)|\,|p - q| \le \underline{\qquad}\;|p - q| < |p - q|\]
+
+lo cual es una \hueco{14}. Por tanto p = q.
+
+\textbf{¿Dónde se usó?} ¿En qué paso de la unicidad se usó que k \textless{} 1 y no solo que k ≤ 1? (una línea)
+
+\subsection{I.3 · Convergencia y cota (3 puntos)}
+
+Para n ≥ 1, otra vez por el teorema del valor medio, existe ξₙ entre pₙ₋₁ y p con
+
+\[|p_n - p| = |g(p_{n-1}) - g(p)| = |g'(\xi_n)|\,|p_{n-1} - p| \le k\,|\underline{\qquad\qquad}|.\]
+
+Aplicando esto n veces: \textbar pₙ − p\textbar{} ≤ k\^{}(\hueco{4}) \textbar p₀ − p\textbar. Como p₀ y p están ambos en {[}a, b{]}, \textbar p₀ − p\textbar{} ≤ máx\{ \hueco{8} , \hueco{8} \}. Y como 0 \textless{} k \textless{} 1, kⁿ → \hueco{6}, así que pₙ → p.
+
+\textbf{¿Dónde se usó (H1)?} Para usar (H2) en ξₙ hace falta que todos los pₙ estén en {[}a, b{]}. ¿Qué hipótesis lo garantiza? (una línea)
+
+\subsection{I.4 · El teorema aplicado a nuestro CO₂ (2 puntos)}
+
+Con g(t) = t − (c(t) − 450)/K se tiene g′(t) = 1 − c′(t)/K.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  En el primer cruce t* ≈ 2033,105, el cuaderno da c′(t\emph{) ≈ 20,45 ppm/año. La versión local del teorema dice que basta \textbar g′(t})\textbar{} \textless{} 1. Completa: \textbar1 − 20,45/K\textbar{} \textless{} 1 ⟺ 0 \textless{} 20,45/K \textless{} \hueco{6} ⟺ K \textgreater{} \hueco{6}.
+\item
+  La celda 12 dice que con K = 20, en {[}a, b{]} = {[}2033,0; 2033,2{]}, g toma valores en {[}2033,1046; 2033,1163{]} y máx \textbar g′\textbar{} ≈ 0,308. ¿Se cumplen (H1) y (H2)? Con p₀ = 2033,0, usa la cota del teorema para hallar un n que garantice un error menor que \textbf{un día} (1/365 ≈ 0,00274 años).
+\end{enumerate}
+
+\subsection{I.5 · Puente con interpolación: la secante es un Lagrange de grado 1 (2 puntos)}
+
+Sea P el polinomio de Lagrange de grado ≤ 1 que interpola a f en t\textsubscript{k−1} y t\textsubscript{k}:
+
+\[P(t) = f(t_{k-1})\,\frac{t - t_k}{t_{k-1} - t_k} \;+\; f(t_k)\,\frac{t - \underline{\qquad}}{t_k - t_{k-1}}.\]
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Verifica que P(t\textsubscript{k}) = \hueco{6} y P(t\textsubscript{k−1}) = \hueco{6}.
+\item
+  Iguala P(t) = 0 y despeja t. Muestra que obtienes exactamente la fórmula de la secante t\textsubscript{k+1} de arriba. (Tres o cuatro líneas de álgebra.)
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte II · Predecir → correr → explicar con datos reales (14 puntos)}
+
+\textbf{Cuaderno:} \texttt{parcial\_raices\_co2.ipynb}. \textbf{Fuente:} NOAA Global Monitoring Laboratory, Mauna Loa, promedios mensuales, https://gml.noaa.gov/webdata/ccgg/trends/co2/co2\_mm\_mlo.csv (consulta: 15 oct 2026). El cuaderno trae un respaldo congelado y corta los datos en \textbf{agosto de 2026} para que todos tengamos los mismos números. NOAA marca el último año como preliminar: si tu pantalla difiere en el último decimal, usa tus números. El cuaderno imprime con punto decimal.
+
+Corre las celdas \textbf{en orden} (la 4 y la 5 son tus funciones y van antes de la 6). En cada ítem: \textbf{(a) PREDICE} en esta guía \textbf{antes} de correr, \textbf{(b) corre} la celda indicada, \textbf{(c) explica} la diferencia. La predicción se califica por el razonamiento, no por acertar.
+
+\subsection{II.1 · ¿En qué año cruza 450 ppm? · Celda 3 (2,5 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  \textbf{Predice.} En agosto de 2026 la tendencia (solo la parábola) vale 430,17 ppm y sube 2,79 ppm/año. Si siguiera en línea recta, ¿en qué año llegaría a 450? ¿El modelo completo (con la onda) cruzará antes o después? ¿Cuántas veces cruzará 450 durante 2033?
+\item
+  Corre la celda 3 y anota: el cruce de la recta, el de la parábola sola y los cruces del modelo completo, cada uno con su c′(t*).
+\item
+  \textbf{Explica.} ¿Por qué la parábola cruza antes que la recta? ¿Por qué el modelo completo cruza antes que la parábola? (Pista: en t* ≈ 2033,105, ¿la onda suma o resta?) ¿Por qué c′ cambia de signo de un cruce al siguiente?
+\end{enumerate}
+
+\subsection{II.2 · ¿Converge el punto fijo? · Celda 6 (2,5 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  \textbf{Predice.} Con c′(t\emph{) ≈ 20,45, calcula \textbar g′(t})\textbar{} = \textbar1 − 20,45/K\textbar{} para K = 10, 20 y 40. ¿Cuáles convergen? ¿Cuál será el más rápido?
+\item
+  Corre la celda 6. Anota las iteraciones de cada K y los últimos iterados con K = 10.
+\item
+  \textbf{Explica.} Con K = 10, ¿qué hacen los iterados (diverge, oscila, se queda quieto)? ¿Cómo encaja con tu respuesta del ítem I.4(a)?
+\end{enumerate}
+
+\subsection{II.3 · Tabla de errores: punto fijo vs.~secante · Celda 7 (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  \textbf{Predice.} Con K = 40, ¿por qué número se multiplica el error en cada paso? ¿Y con K = 20? Con la secante, ¿qué orden esperas leer en la columna ``orden estimado''?
+\item
+  Corre la celda 7 y copia: las razones e\textsubscript{n+1}/eₙ (K = 40 y K = 20) y los órdenes estimados de la secante, con su promedio.
+\item
+  \textbf{Explica.}
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Con K = 40, las primeras razones (0,469; 0,471; \ldots) son menores que 0,489 y van subiendo hacia ese valor. ¿Por qué? (Piensa en g′(ξₙ) con ξₙ → t*.)
+\item
+  ¿Por qué los órdenes de la secante saltan (2,48; 1,82; 1,26; 1,83) en lugar de dar exactamente 1,618?
+\item
+  Los errores se detienen alrededor de 10⁻¹² y no bajan más. ¿Por qué? (Pista: ¿cuántas cifras significativas tiene un double, y cuántas usa ya el número 2033?)
+\end{enumerate}
+
+\subsection{II.4 · ¿Qué cruce encuentra cada método? · Celda 8 (3 puntos)}
+
+Los tres cruces de 2033 caen en febrero, julio y diciembre.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  \textbf{Predice.}
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Punto fijo con K = 20 arrancando en t₀ = 2033,7 (entre julio y diciembre): ¿a qué cruce va?
+\item
+  ¿Existe algún K \textgreater{} 0 con el que el punto fijo converja al cruce de \textbf{julio}? (Mira el signo de c′ en julio y calcula g′ = 1 − c′/K.)
+\item
+  ¿Puede la secante encontrar el cruce de julio?
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  Corre la celda 8. Anota a qué cruce llega cada arranque y g′ en los tres cruces.
+\item
+  \textbf{Explica.} ¿Por qué el cruce de julio \textbf{repele} al punto fijo para cualquier K \textgreater{} 0 y la secante sí lo encuentra desde (2026,625; 2040)? Desde el mismo t₀ = 2026,625, cambiar t₁ de 2028 a 2029 manda la secante de febrero a diciembre. Mira el primer iterado nuevo en cada caso y explica por qué.
+\end{enumerate}
+
+\subsection{II.5 · Precisión de ``un día'' · Celda 9 (1,5 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  \textbf{Predice.} Arrancando en t₀ = 2033,0 (error inicial 0,1047), usa eₙ ≈ 0,1047 · 0,489ⁿ para estimar cuántas iteraciones necesita el punto fijo con K = 40 para que el error sea menor que 1/365. ¿Y la secante?
+\item
+  Corre la celda 9.
+\item
+  \textbf{Explica.} Si tu estimación y el resultado no coinciden, ¿por qué? (Mira otra vez las razones de II.3.) En una frase: ¿qué ganas al escoger bien K?
+\end{enumerate}
+
+\subsection{II.6 · ¿Cuánto depende el cruce de los datos usados? · Celda 10 (1,5 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  \textbf{Predice.} Si el modelo se ajusta con datos desde 1960 en vez de desde 1990, ¿el primer cruce se mueve días, meses o años?
+\item
+  Corre la celda 10 y anota los cinco cruces.
+\item
+  \textbf{Explica} por qué la ventana desde 1960 cambia tanto el resultado. (Pista: ¿la aceleración del CO₂ ha sido constante desde 1960?)
+\end{enumerate}
+
+\textbf{Reflexión (una línea, obligatoria):} el número que calculaste es la raíz de c(t) = 450 para un modelo que escogimos nosotros. ¿Qué le falta a ese número para ser una predicción climática?
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte III · El agente (12 puntos)}
+
+\begin{quote}
+⚠ \textbf{Escenario inventado para el parcial.} Los agentes no existen, pero \textbf{todos los números de abajo se calcularon de verdad} con nuestro c(t). Puedes comprobarlos con la celda 11.
+\end{quote}
+
+\textbf{Agente A} (como el de los laboratorios 3 y 4). Escoge K en la rejilla \{1,00; 1,05; \ldots; 100,00\}. Arranca siempre en t₀ = 2033,0 y para cuando \textbar t\textsubscript{n+1} − tₙ\textbar{} \textless{} 10⁻⁸ (con un tope de 500 iteraciones). \textbf{Recompensa = −(número de iteraciones).} Tras explorar toda la rejilla reporta:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+K
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+g′(t\emph{) = 1 − c′(t})/K
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Iteraciones
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Resultado
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+6,82 (= c′(t*)/3) & −2,000 & 500 (tope) & no converge \\
+10,00 & −1,045 & 500 (tope) & oscila: 2033,054 ↔ 2033,161 \\
+10,30 & −0,985 & 500 (tope) & marcado como ``no converge'' \\
+15,00 & −0,363 & 18 & 2033,104729 \\
+20,00 & −0,022 & 6 & 2033,104729 \\
+\textbf{20,45} (≈ c′(t*)) & \textbf{0,000} & \textbf{4} & 2033,104729 \\
+25,00 & 0,182 & 11 & 2033,104729 \\
+40,00 & 0,489 & 23 & 2033,104729 \\
+100,00 & 0,796 & 65 & 2033,104729 \\
+\end{longtable}
+
+El agente también escribe las afirmaciones A1 a A6:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{A1.} ``Mi mejor K (20,35 y 20,45 empatan con 4 iteraciones) es prácticamente c′(t\emph{) = 20,45. Ahí g′(t}) = 0.''
+\item
+  \textbf{A2.} ``Con K = c′(t*), los errores fueron 0,1047; 0,00402; 1,62·10⁻⁵; 2,6·10⁻¹⁰. El cociente e\textsubscript{n+1}/eₙ² se estabiliza cerca de 0,98, así que la convergencia es cuadrática.''
+\item
+  \textbf{A3.} ``Con K = c′(t*)/3 ≈ 6,82 también converge al mismo cruce, solo que más despacio.''
+\item
+  \textbf{A4.} ``K = 10,30 diverge: lo marqué con 500 iteraciones.''
+\item
+  \textbf{A5.} ``Entre más grande K, más seguro y más rápido. K = 100 es la apuesta ideal.''
+\item
+  \textbf{A6.} ``Con K = 20 los errores tₙ − t* alternan de signo (+, −, +, −, \ldots). Con K = 40 tienen todos el mismo signo.''
+\end{itemize}
+
+\subsection{III.1 · ¿Verdadera o falsa? (6 puntos)}
+
+Para cada afirmación A1 a A6, di si es \textbf{verdadera o falsa} y justifícala en una o dos líneas \textbf{con la teoría} (g′(t*), el teorema de la Parte I, Taylor). Puedes usar la celda 11 para comprobar. 1 punto cada una.
+
+\subsection{III.2 · Inferencia: ¿por qué el agente aprendió eso? (2 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Explica con Taylor por qué K = c′(t\emph{) es especial: escribe t\textsubscript{n+1} − t} = g(tₙ) − g(t\emph{) ≈ g′(t})(tₙ − t\emph{) + ½ g″(ξ)(tₙ − t})² y di qué término desaparece.
+\item
+  Se volvió a entrenar al agente, ahora arrancando en el último dato, t₀ = 2026,625 (6,5 años antes del cruce). Su mejor K pasó a ser \textbf{18,65 (25 iteraciones)}, mientras que K = 20,45 necesita \textbf{26}. Alguien concluye: ``entonces la teoría se equivoca''. ¿Por qué \textbf{no} se equivoca? (Pista: entre 2026 y 2033, c′(t) no vale 20,45. Por la onda, oscila entre unos −16 y +22 ppm/año. ¿De qué habla g′(t*): del viaje o de la llegada?)
+\end{enumerate}
+
+\subsection{III.3 · Reward hacking (3 puntos)}
+
+\textbf{Agente B.} Escoge \textbf{K y el punto inicial t₀}: K ∈ \{10; 10,5; \ldots; 40\} y t₀ entero entre 1850 y 2040. Ahora para cuando el \textbf{residuo} es pequeño, \textbar c(tₙ) − 450\textbar{} \textless{} 0,01 ppm. \textbf{Recompensa = −(número de iteraciones).} Reporta, orgulloso:
+
+\begin{quote}
+``¡Récord! Con K = 15 y t₀ = 1868 encuentro el cruce en \textbf{1 iteración}: t = 1868,0102, c(t) = 449,998 ppm. \textbf{El CO₂ ya había cruzado las 450 ppm en 1868.}''
+\end{quote}
+
+Al obligarlo a usar t₀ entre 1990 y 2040, reporta: ``Con K = 20 y t₀ = 2034, 1 iteración: t = 2033,959. \textbf{El CO₂ cruzará las 450 ppm por primera vez en diciembre de 2033}.''
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  (1 punto) Verifica a mano que c(1868) ≈ 449,85. Calcula la parábola en t = 1868 con a₀, a₁, a₂ (te debe dar ≈ 450,75) y usa que en un año entero sen(2πt) = 0 y cos(2πt) = 1, así que la onda aporta B ≈ −0,895. ¿Por qué la parábola ``vuelve a subir'' hacia atrás? (Su vértice está en t ≈ 1950,8.) ¿Es real ese cruce? Los núcleos de hielo de Law Dome (Antártida) dan unas 285 a 288 ppm para los años 1860.
+\item
+  (1 punto) La segunda afirmación también es falsa. ¿Por qué? ¿Qué parte de la recompensa permite que el agente ``gane'' con el cruce equivocado?
+\item
+  (1 punto) Propón \textbf{una} modificación concreta a la recompensa o a las reglas que impida ambas trampas.
+\end{enumerate}
+
+\subsection{III.4 · Verificación (1 punto)}
+
+¿Basta un residuo pequeño, \textbar c(tₙ) − 450\textbar{} \textless{} 0,01, para decir que encontraste \textbf{el} cruce que buscabas? Da dos condiciones que tú exigirías antes de aceptar el resultado de cualquier agente (o de cualquier IA).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Parte IV · Consulta: nuestra idea de paper aplicada a tu tema (12 puntos)}
+
+\textbf{Nuestra idea de paper:} agentes de aprendizaje por refuerzo que aprenden las mismas decisiones que toma un estudiante de métodos numéricos (aquí: qué K usar, desde dónde arrancar, cuándo parar, qué método escoger), con demostraciones escritas como grafo que el agente reutiliza frente a problemas nuevos.
+
+Haz una búsqueda profunda (NotebookLM Deep Research u otra herramienta, que registras en tu bitácora) sobre tres frentes:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Proyecciones de CO₂:} la curva de Keeling, cómo proyectan NOAA, Scripps y el IPCC (escenarios SSP), y por qué no ajustan una parábola.
+\item
+  \textbf{Métodos de raíces y de punto fijo modernos y robustos:} el método de Brent (bisección + secante + interpolación cuadrática inversa) y la aceleración de Anderson para iteraciones de punto fijo.
+\item
+  \textbf{ML/RL para escoger parámetros de métodos iterativos:} por ejemplo, aprender el parámetro de relajación de un método iterativo a partir del número de iteraciones.
+\end{enumerate}
+
+\subsection{IV.1 · Síntesis de una página (4 puntos)}
+
+Escrita \textbf{por ti, sin IA}, a mano o digitada. Debe responder: ¿qué se sabe hoy en cada frente? ¿Dónde se toca con lo que hiciste en este parcial (K como parámetro de relajación, el cruce que cambia según el arranque, la recompensa mal diseñada)?
+
+\subsection{IV.2 · Tabla de 4 fuentes auditadas (4 puntos)}
+
+Al menos una por frente. Puedes partir de estas semillas, pero \textbf{al menos dos} deben salir de tu propia búsqueda:
+
+\begin{itemize}
+\tightlist
+\item
+  C. D. Keeling (1960), \emph{Tellus}, sobre la concentración de CO₂ atmosférico.
+\item
+  R. P. Brent (1973), \emph{Algorithms for Minimization without Derivatives}.
+\item
+  H. F. Walker y P. Ni (2011), ``Anderson acceleration for fixed-point iterations'', \emph{SIAM J. Numer. Anal.}
+\item
+  M. Khodak, E. Chow, M.-F. Balcan y A. Talwalkar (2023), ``Learning to Relax: Setting Solver Parameters Across a Sequence of Linear System Instances'', arXiv:2310.02246.
+\end{itemize}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Referencia (autores, año, título)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Existe? ¿Cómo lo comprobaste?
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tipo (artículo, libro, reporte, preprint)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+¿Dice lo que la herramienta le atribuye? (sí/parcial/no y por qué)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conexión con el curso
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 \filarespuesta & & & & & \\
+2 \filarespuesta & & & & & \\
+3 \filarespuesta & & & & & \\
+4 \filarespuesta & & & & & \\
+\end{longtable}
+
+\subsection{IV.3 · Preguntas guía (2 puntos)}
+
+Responde \textbf{dos} de estas tres, en 3 a 5 líneas cada una:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  La aceleración de Anderson con memoria 1, en una dimensión, aplicada a g(t) = t − (c(t) − 450)/K, da \textbf{exactamente} los mismos iterados que la secante sobre c(t) − 450, sin importar K. Compruébalo con un cálculo corto y explica qué significa: ¿para qué ``aprender K'' si Anderson lo vuelve irrelevante?
+\item
+  El método de Brent nunca pierde el intervalo {[}a, b{]} con cambio de signo. ¿Habría evitado el problema de II.4 (llegar al cruce que no querías)? ¿Y la trampa del agente B?
+\item
+  Khodak et al.~aprenden un parámetro de relajación usando como señal \textbf{solo el número de iteraciones}, igual que nuestro agente A. ¿Qué tendría que cambiar en nuestro problema (por ejemplo, actualizar el modelo cada mes con un dato nuevo de NOAA) para que aprender K valga la pena?
+\end{enumerate}
+
+\subsection{IV.4 · Cierre (2 puntos)}
+
+\textbf{¿Qué tendría que ser verdad para que nuestra idea fuera nueva en tu tema?} Responde en 4 a 6 líneas, citando al menos una de tus fuentes auditadas.
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1047}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2674}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.3140}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Punto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué le pedí
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué me respondió, en una línea
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué comprobé o corregí yo, y cómo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el martes)}
+
+\textbf{Punto sorteado:} \hueco{14}
+
+\begin{itemize}
+\tightlist
+\item[$\square$]
+  Explica el punto con sus palabras, sin leer la guía
+\item[$\square$]
+  Reproduce en el tablero la cuenta o el paso clave
+\item[$\square$]
+  Responde una variante: otro dato, otro valor inicial, otro nodo
+\item[$\square$]
+  Lo que dice coincide con lo que entregó y con su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 \textbf{Nota final:} \hueco{6}
+
+\end{document}
