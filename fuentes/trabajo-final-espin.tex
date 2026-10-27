@@ -1,0 +1,475 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Trabajo final · Girar un espín con un campo eléctrico}
+\usepackage{fancyvrb}
+
+% Cabecera propia del trabajo final (misma estética que los parciales)
+\newcommand{\cabeceratf}[3]{%
+  \thispagestyle{fancy}%
+  \noindent\begin{minipage}[t]{0.64\textwidth}\small
+    \textsc{Universidad Nacional de Colombia}\\
+    Sede Manizales · Departamento de Matemáticas y Estadística
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.34\textwidth}\small\raggedleft
+    \textsc{Métodos Numéricos}\\
+    Semestre 2026-2
+  \end{minipage}\par\vspace{5pt}
+  \hrule height 0.8pt\vspace{1.5pt}\hrule height 0.3pt
+  \vspace{14pt}
+  \begin{center}
+    {\small\scshape Trabajo final · cuatro semanas}\\[6pt]
+    {\LARGE\bfseries #1}\\[5pt]
+    {\large\itshape #2}\\[8pt]
+    {\small #3}
+  \end{center}
+  \vspace{4pt}
+  \noindent\textbf{Nombre:}\ Samuel Camilo Merchán\hfill\textbf{Coautor y director:}\ Carlos Orrego\par\vspace{10pt}
+  \begin{center}
+  \begin{tabular}{l*{6}{>{\centering\arraybackslash}p{1.3cm}}}
+    \toprule
+    Pieza & A & B & C & D & \textbf{Total} & E (extra)\\
+    \midrule
+    Puntos & 10 & 12 & 14 & 14 & \textbf{50} & +5\\
+    Semana & 1 & 2 & 3 & 4 & & 4\\
+    \midrule
+    Obtenidos\rule[-0.45cm]{0pt}{1.0cm} & & & & & & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{2pt}}
+
+\begin{document}
+\cabeceratf{Girar un espín con un campo eléctrico}{Tres discretizaciones de la resonancia de espín, un certificado y un agente que hace trampa}{Entregas: jueves 5, 12 y 19 de noviembre · Entrega final y sustentación: jueves 26 de noviembre de 2026}
+
+En tu parcial hay cuatro cosas que valen más que la nota. Encontraste el paso clave de Gauss--Hermite: $(x-x_j)L_j = H_n/H_n'(x_j)$, de donde salen $B_j = 0$ y la exactitud hasta grado $2n-1$. Viste la cancelación escondida en $D(1-2e^{a^2/4}+e^{a^2})-\tfrac14$ y explicaste por qué \texttt{expm1} la evita. Hiciste cuadrar las dos recetas de perturbación con Morse exacto: $-36{,}31 + 23{,}11 = -13{,}20$ cm$^{-1}$, que es justo $-\omega_e x_e/4$. Y en la Parte III diste con la trampa del agente: un nodo en $x = 0$ da error cero en una familia impar, y ese cero no mide nada.
+
+Este trabajo usa las cuatro. El problema es voltear un espín con electricidad, que es lo que persigue tu semillero. En física eso tiene nombre: \emph{resonancia de espín por dipolo eléctrico} (EDSR). Un electrón en un punto cuántico vive en un pozo casi armónico; tus polinomios de Hermite son sus estados. El acoplamiento espín--órbita amarra el espín al movimiento. Un campo eléctrico oscilante sacude la posición del electrón, y, si la frecuencia coincide con la separación Zeeman, el espín empieza a girar, como la cuerda de un piano que vibra por simpatía cuando alguien canta su nota. La rapidez de ese giro es la frecuencia de Rabi, y es proporcional a un elemento de matriz que vas a calcular de tres maneras distintas. Una de ellas miente sobre el principio variacional de tu IV.1, y un agente aprende a aprovechar esa mentira.
+
+\begin{quote}
+\textbf{La pregunta del artículo.} En el modelo 1D de un punto cuántico con espín--órbita y campo magnético, ¿cuál discretización con base del oscilador (truncar en el marco del laboratorio, rotar y usar elementos de matriz exactos, o rotar y usar la DVR de Gauss--Hermite) da la separación Zeeman y el elemento de Rabi con menos estados? ¿Se pueden \emph{encerrar} la separación Zeeman y el elemento de Rabi en cajas que el computador verifica, sin suponer nada sobre el espectro? Con esas cajas, ¿dónde dejan de valer las fórmulas de primer orden que usan los experimentales? ¿Y qué aprende un agente cuando la recompensa es «menor energía es mejor»?
+\end{quote}
+
+\textbf{Materiales.} El cuaderno \texttt{trabajo\_final\_espin.ipynb} (repositorio del curso, carpeta \texttt{trabajo-final-espin}, botón «Open in Colab») y la plantilla del artículo (\texttt{espin\_preprint.tex}, en la subcarpeta \texttt{preprint}), que puedes abrir en Overleaf. Las lecturas tienen secciones y ecuaciones exactas: no tienes que leer ningún artículo completo.
+
+\textbf{Unidades.} $\hbar = m^* = \omega = 1$: longitudes en $\ell = \sqrt{\hbar/(m^*\omega)}$, energías en $\hbar\omega$. El hamiltoniano en el \emph{marco del laboratorio} es
+\[ H = \tfrac12 p^2 + \tfrac12 x^2 + \eta\, p\,\sigma_y + \tfrac{b}{2}\,\sigma_z, \qquad \eta = \frac{\ell}{\ell_{\mathrm{so}}}, \quad b = \frac{|g|\mu_B B}{\hbar\omega}, \]
+y el campo eléctrico entra como $eE_0\ell\, x\cos(\omega_d t)$. Llamamos $|g\rangle$ y $|e\rangle$ a los dos niveles más bajos. La frecuencia de Rabi es $f_R = eE_0\ell\,|\langle g|x|e\rangle|/h$.
+
+\section{Reglas}
+
+\begin{itemize}
+\tightlist
+\item \textbf{Cada jueves entregas una pieza}: esta guía con las respuestas de esa pieza a mano, y la sección del artículo que le corresponde en la plantilla. Te devuelvo comentarios antes de la pieza siguiente, para que el artículo crezca corregido.
+\item \textbf{El ritual de siempre.} Antes de correr cada celda escribes tu predicción aquí; la predicción escrita después de correr no cuenta. La predicción equivocada no quita puntos; la explicación vacía, sí.
+\item \textbf{Puedes usar IA, y te audito.} Llena la bitácora del final \emph{desde la primera semana}. Puedes usar IA para traducir al inglés tus borradores y para entender lecturas, pero \textbf{las demostraciones, los grafos y la interpretación de los resultados son tuyos}. Toda referencia que entre al artículo la abres tú y la verificas tú.
+\item \textbf{El artículo va en inglés.} Si te ayuda, escribe cada sección primero en español y tradúcela al final de la semana.
+\item \textbf{Sustentación (jueves 26 de noviembre, 15 minutos).} Se sortea una pieza y la explicas en el tablero, sin la guía, con una variante (otro η, otro b, otro N). La nota escrita se multiplica por 1, 0,6 o 0,2, igual que en el parcial.
+\item \textbf{Qué cuenta.} Una justificación clara con un error de cuenta vale mucho; si algo de esta guía te parece mal planteado, dilo y explica por qué: eso también se califica. Hay al menos una conclusión equivocada a propósito en la guía (pieza B) y una fuga en un diseño del cuaderno (pieza C). Encontrarlas es parte del trabajo.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza A · Del árbol al DAG, y el modelo (semana 1 · 10 puntos)}
+
+\textbf{Lecturas.} K.\,C. Nowack, F.\,H.\,L. Koppens, Yu.\,V. Nazarov y L.\,M.\,K. Vandersypen, \emph{Coherent control of a single electron spin with electric fields}, Science 318, 1430 (2007), arXiv:0707.3080: las ecuaciones (1) y (2) con el párrafo que las rodea, y la discusión de la figura 4A. R. Li, J.\,Q. You, C.\,P. Sun y F. Nori, \emph{Controlling a nanowire spin-orbit qubit via electric-dipole spin resonance}, Phys.\ Rev.\ Lett.\ 111, 086805 (2013), arXiv:1304.3257: el resumen y el párrafo «Spin-orbit qubit based on a nanowire quantum dot», ecuaciones (2) a (4).
+
+\subsection{A.1 · Tu grafo, de árbol a DAG (3 puntos)}
+
+En el parcial escribiste la demostración de Gauss--Hermite como este árbol:
+
+\begin{Verbatim}[fontsize=\footnotesize, frame=single]
+QED: Conclusión (Fórmula de Gauss-Hermite y término de error)
+ |- - PASO 6: Estimación del término de error (Residuo por TVM de integrales)
+        |-- PASO 1: Integración del osculante
+        |     |-- H1: Nodos ortogonales (Hipótesis: raíces de H_n)
+        |-- PASO 5: Exactitud de la regla (grado <= 2n - 1)
+              |-- PASO 4: Anulación de derivadas (B_j = 0 por ortogonalidad H2)
+                    |-- PASO 3: Proporcionalidad (q(x) proporcional a H_n(x))
+                          |-- PASO 2: Polinomio auxiliar (q(x) = (x - x_j) L_j(x))
+                          |     |-- PASO 1: Integración del osculante
+                          |           |-- H1: Nodos ortogonales
+                          |-- H1: Nodos ortogonales (Hipótesis: raíces de H_n)
+Distractor: Anulación por simetría impar en el nodo.
+\end{Verbatim}
+
+La cadena central está bien: la exactitud depende de $B_j = 0$, que depende de la proporcionalidad, que depende de que los nodos sean las raíces de $H_n$. Ahora conviértelo en un grafo de verdad.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item El Paso 1 aparece dos veces y H1 tres. ¿Por qué un árbol \emph{obliga} a repetir nodos? Reescribe la demostración como una lista de nodos (paso + razón) con flechas «depende de», sin repeticiones. Incluye como nodos propios las hipótesis H2, H3 y H4 de tu informe y el paso $A_j = w_j > 0$, que en el árbol no aparece. (1 punto)
+\item Una de tus flechas significa «viene después» y no «depende de». ¿Cuál? Justifícalo diciendo qué hipótesis usa de verdad ese paso. Revisa también el nombre de H1: ¿qué es lo ortogonal, los nodos o los polinomios? (1 punto)
+\item Conecta el distractor: ponlo como una razón alternativa que apunta al nodo $B_j = 0$. Después di para qué $j$ y para qué $n$ el distractor \emph{sí} es cierto, y por qué eso lo hace un buen distractor. ¿Qué tiene en común con tu respuesta de la Parte III.3? Unifica la numeración de los pasos con la de tu informe. (1 punto)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{A.2 · El rompecabezas: la rotación que se come al espín--órbita (4 puntos)}
+
+\textbf{Afirmación.} Sea $U = e^{i\eta x\sigma_y}$. Entonces
+\[ H' = U H U^\dagger = \tfrac12 p^2 + \tfrac12 x^2 - \tfrac{\eta^2}{2} + \tfrac{b}{2}\bigl(\sigma_z\cos 2\eta x - \sigma_x\sin 2\eta x\bigr). \]
+El espín--órbita desaparece del término cinético y reaparece \emph{dentro del Zeeman}, como un campo magnético que gira con la posición. Las piezas vienen de tres lugares: el álgebra de Pauli, la relación $[x,p] = i$ y la fórmula $e^{A}Be^{-A} = B + [A,B] + \tfrac{1}{2!}[A,[A,B]] + \cdots$.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item Con $A = i\eta x\sigma_y$: $[A, p] = i\eta\,\sigma_y\,[x,p] = $ \hueco{14}. El conmutador siguiente, $[A,[A,p]]$, vale cero porque \hueco{36}. Entonces $UpU^\dagger = p - \eta\sigma_y$.
+\item $U\bigl(\tfrac12 p^2 + \eta p\sigma_y\bigr)U^\dagger = \tfrac12(p - \eta\sigma_y)^2 + \eta(p-\eta\sigma_y)\sigma_y = $ \hueco{20}, usando que $\sigma_y^2 = $ \hueco{4} y que $p$ conmuta con $\sigma_y$.
+\item $UxU^\dagger = x$ porque \hueco{30}.
+\item Para el Zeeman: como $\sigma_y\sigma_z = -\sigma_z\sigma_y$, se tiene $e^{i\theta\sigma_y}\sigma_z = \sigma_z\, e^{\hueco{8}}$. Con $e^{i\varphi\sigma_y} = \cos\varphi + i\sin\varphi\,\sigma_y$ y $\sigma_z\sigma_y = -i\sigma_x$, queda $U\sigma_zU^\dagger = \sigma_z\cos 2\eta x - \sigma_x\sin 2\eta x$. ∎
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item ¿En qué paso se usa que el problema es \emph{unidimensional}? En 2D, el Rashba es $\alpha(p_x\sigma_y - p_y\sigma_x)$. ¿Por qué ya no se puede eliminar con una sola rotación? (1 punto)
+\item ¿Por qué $|\langle g|x|e\rangle|$ vale lo mismo en los dos marcos? Comprueba en la celda A1 cuántos dígitos coinciden los dos espectros. (1 punto)
+\item Con $b = 0$, $H'$ tiene niveles $n + \tfrac12 - \tfrac{\eta^2}{2}$, cada uno doble. Entonces el espín--órbita, solo, no separa los espines ni deja voltearlos con un campo eléctrico. ¿Por qué la EDSR necesita a la vez $\eta \ne 0$ y $b \ne 0$? Responde con la forma de $H'$. (2 puntos, incluye llenar los huecos)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{A.3 · Úsalo a mano: la fórmula de Rabi a primer orden (3 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item En tu parcial usaste $\langle e^{-kx}\rangle = e^{k^2/4}$ en el estado base. Con la misma gaussiana, demuestra que
+\[ \langle 1|\sin 2\eta x|0\rangle = \frac{\sqrt2}{\sqrt\pi}\int_{-\infty}^{\infty} x\,\sin(2\eta x)\,e^{-x^2}\,dx = \sqrt2\,\eta\,e^{-\eta^2}. \]
+Pista: deriva $\int e^{-x^2}\cos(kx)\,dx = \sqrt\pi\, e^{-k^2/4}$ con respecto a $k$. (1 punto)
+\item Trata el término $-\tfrac b2\sigma_x\sin 2\eta x$ como perturbación de primer orden sobre el doblete $|0{\downarrow}\rangle, |0{\uparrow}\rangle$. Como $x$ solo conecta $|0\rangle$ con $|1\rangle$, en la suma sobre estados intermedios sobrevive un solo término. Demuestra que
+\[ |\langle g|x|e\rangle| \approx \eta\, b\, e^{-\eta^2}. \]
+¿En qué paso usaste que $x$ solo conecta $|0\rangle$ con $|1\rangle$? (1 punto)
+\item Vuelve a unidades físicas. Demuestra que, sin el factor $e^{-\eta^2}$, $h f_R = |g|\mu_B B\,(\ell/\ell_{\mathrm{so}})\,(eE_0\ell/\Delta)$ con $\Delta = \hbar\omega$. Es la ecuación (2) de Nowack et al., que ellos atribuyen a Golovach, Borhani y Loss (2006). Li et al. dicen que la frecuencia de Rabi es máxima en $\eta = \sqrt2/2$. ¿Qué máximo de tu fórmula es ese? (1 punto)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{A.4 · Predecir → correr → explicar (sin puntos aparte: cuenta para A.2 y A.3)}
+
+\textbf{Celda A2.} Tu función \texttt{valor\_esperado\_GH} del parcial calcula $\langle 1|\sin 2\eta x|0\rangle$. Predice: ¿con cuántos nodos llega al límite de la máquina con η = 0,1? \hueco{6} ¿Y con η = 1,5? \hueco{6} Obtenido: \hueco{6}, \hueco{6}. Explica la diferencia con la fórmula del error de tu Parte I: ¿cómo crece la derivada de orden $2n$ de $\sin 2\eta x$?
+
+\textbf{Celda A3.} Predice dónde falla la fórmula de primer orden en más de un 1 \%:\par\hueco{60}\par ¿Qué pesa más, el factor $e^{-\eta^2}$ o el orden siguiente en $b$?\par\hueco{60}
+
+\textbf{Celda A4.} Los dos dispositivos reales: GaAs (Nowack et al.) y un nanoalambre de InAs (Nadj-Perge et al., 2010). Anota η \hueco{8}, \hueco{8}, el error de la fórmula de primer orden \hueco{8}, \hueco{8} y el campo que haría falta en GaAs para los 4,7 MHz de Nowack \hueco{8} kV/m. ¿Es razonable ese campo, si en el experimento caen unos pocos mV entre puntos separados unos 100 nm?
+
+\begin{quote}
+\textbf{Para el artículo (semana 1).} Escribe la sección 2 de la plantilla, \emph{Model}: el hamiltoniano, la rotación de A.2 (citando a Li et al. y, para la idea de la rotación, a Levitov y Rashba como lo citan Nowack et al.: abre la referencia y verifícala), la fórmula de A.3 y la tabla de los dos dispositivos. Una página. Ninguna fórmula que no puedas explicar en el tablero.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza B · Tres discretizaciones (semana 2 · 12 puntos)}
+
+\textbf{Lecturas.} M. Lombardi, P. Barletta y A. Kievsky, \emph{Variational estimates using a discrete variable representation}, Phys.\ Rev.\ A 70, 032503 (2004), arXiv:physics/0403071: sección 2 hasta la ecuación (4), y la discusión de la figura 1 y la tabla 2. G.\,H. Golub y J.\,H. Welsch (1969), tu fuente del parcial: solo la idea de la matriz de Jacobi.
+
+Hay tres maneras de convertir el problema en una matriz con $N$ estados del oscilador $\psi_0, \ldots, \psi_{N-1}$:
+\begin{itemize}
+\tightlist
+\item \textbf{Laboratorio.} $H$ tal cual. Todo es polinomial en $x$ y $p$, así que los elementos de matriz son exactos y el único error es truncar.
+\item \textbf{Rotado, FBR.} $H'$ con elementos de matriz exactos de $\cos 2\eta x$ y $\sin 2\eta x$.
+\item \textbf{Rotado, DVR.} $H'$ con el potencial evaluado en los $N$ nodos de Gauss--Hermite. Es la DVR de Light, Hamilton y Lill de tu IV.1.
+\end{itemize}
+
+\subsection{B.1 · El rompecabezas: dónde se rompe Ritz (5 puntos)}
+
+\textbf{Principio de Ritz (lo aceptamos).} Si $P$ proyecta sobre un subespacio de dimensión $N$ y $H_N = PHP$ es la \emph{compresión exacta} de $H$, entonces el $k$-ésimo valor propio de $H_N$ es mayor o igual que el $k$-ésimo de $H$.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item Sea $X_N$ la matriz de $x$ en $\psi_0, \ldots, \psi_{N-1}$. Es tridiagonal, y sus valores propios son las raíces de $H_N$ porque \hueco{40} (pista: Golub--Welsch). Sea $T$ la matriz de sus vectores propios.
+\item Las funciones DVR son $\phi_j = \sum_n T_{nj}\psi_n$. La DVR aproxima la matriz de un potencial $V$ por $T\,\mathrm{diag}\bigl(V(x_j)\bigr)\,T^{\mathsf T}$.
+\item Si $V$ es un polinomio de grado $d$, el elemento $\langle\psi_m|V|\psi_n\rangle$ es una integral contra $e^{-x^2}$ de un polinomio de grado $m + n + d$. Por tu teorema de la Parte I, la DVR la calcula \emph{exactamente} si \hueco{16}.
+\item Por 3, en el marco del laboratorio la DVR y la FBR coinciden: todo es polinomial. En el marco rotado, $H'_{\mathrm{DVR}} = PH'P + \Delta$, donde $\Delta$ es \hueco{30}.
+\item Entonces el principio de Ritz se aplica a \hueco{14} y a \hueco{14}, pero no a \hueco{14}. ∎
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item ¿En qué paso se usa que los nodos son las raíces de $H_N$ y no otros? ¿Qué pasaría con nodos equiespaciados? (1 punto)
+\item Lombardi et al.\ dicen que la DVR «no es variacional». Escríbelo en tus palabras con el $\Delta$ del paso 4. ¿El error de la DVR puede tener cualquier signo? (1 punto)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{B.2 · Predecir → correr → explicar (5 puntos)}
+
+\textbf{Celda B1: la DVR en tu molécula.} Morse de H$^{35}$Cl con las constantes de NIST de tu parcial, resuelto con $N$ estados de dos maneras. Predice si la DVR queda por encima o por debajo de los niveles exactos: \hueco{30}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+$N$ & DVR, $E_0$ (cm$^{-1}$) & FBR, $E_0$ & DVR, $E_1$ & FBR, $E_1$\\
+\midrule
+4\filarespuesta & & & & \\
+8\filarespuesta & & & & \\
+12\filarespuesta & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{quote}
+\textbf{Conclusión de la celda B1.} En los 18 casos de la tabla (9 valores de $N$, dos niveles) la DVR queda por encima del valor exacto. Por lo tanto, en la práctica la DVR, igual que Ritz, da cotas superiores, y en lo que sigue podemos usar sus energías como garantía.
+\end{quote}
+
+¿Estás de acuerdo con esta conclusión? Responde \emph{después} de la celda B2. (2 puntos)
+
+\lineasrespuesta{2}
+
+\textbf{Celda B2: el espín.} Primero con η = 1,5 y $b$ = 0,2, después con η = 0,3. Predice el signo del error de $E_0$ en cada columna:
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & laboratorio & rotado, FBR & rotado, DVR\\
+\midrule
+mi predicción del signo\filarespuesta & & & \\
+casos por debajo de la referencia (η = 1,5)\filarespuesta & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item ¿Qué está mal en la conclusión de la celda B1? Escríbelo como lo escribirías en el artículo: qué se observó, qué se generalizó y por qué la generalización no vale. (Este es el mismo tipo de error que la recompensa de tu Parte III: un caso particular que parece prueba.) (2 puntos)
+\item \emph{Pregunta abierta.} ¿Por qué en Morse la DVR quedó siempre arriba? No conocemos la respuesta completa. Una hipótesis bien argumentada con la fórmula del error de tu Parte I (¿qué signo tienen las derivadas de orden $2n$ de $e^{-ax}$ y de $\cos 2\eta x$?) vale el punto, aunque al final resulte incompleta. (1 punto)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{B.3 · ¿Cuál marco gana? (2 puntos)}
+
+\textbf{Celda B3.} Predice: el marco rotado tiene el espín--órbita eliminado de forma exacta. ¿Converge siempre más rápido? \hueco{30}
+
+Con η = 1,5, ¿a partir de qué $N$ gana el laboratorio? \hueco{6} Explícalo con dos argumentos: (i) qué error tiene cada marco según B.1; (ii) tu fórmula del error de Gauss--Hermite aplicada a $\cos 2\eta x$, cuyas derivadas de orden $2n$ crecen como $(2\eta)^{2n}$.
+
+\lineasrespuesta{3}
+
+\begin{quote}
+\textbf{Para el artículo (semana 2).} Sección 3, \emph{Three discretizations}: las tres matrices, el argumento de B.1 (por qué la FBR y el laboratorio son variacionales y la DVR no, citando a Lombardi et al.), la tabla de signos de B2 y la figura de B3. La frase de la celda B1 \emph{no} entra al artículo; lo que entra es por qué no vale.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza C · El certificado y el mapa (semana 3 · 14 puntos)}
+
+\textbf{Lectura.} M. Ronto, P. Jeszenszki, E. Mátyus y E. Pollak, \emph{Lower bounds on par with upper bounds for few-electron atomic energies}, arXiv:2301.02827 (2023): sección III.B, ecuación (14), y las referencias [3] (Temple, 1928) y [7] (Kato, 1949). Abre esas dos referencias y anota revista, volumen y página: las vas a citar.
+
+Ritz da cotas \emph{superiores}. Para encerrar un número hace falta también una cota \emph{inferior}, y ahí entra el residuo $r = Hv - \lambda v$ del vector de Ritz $v$: entre más pequeño, más cerca está λ de un valor propio exacto. En general, $\|r\|$ es una norma en un espacio infinito que nadie sabe calcular. En este problema, en cambio, los dos marcos de la pieza A se reparten el trabajo:
+\begin{itemize}
+\tightlist
+\item el del laboratorio da el residuo en forma cerrada;
+\item el rotado da una brecha espectral rigurosa.
+\end{itemize}
+Juntos encierran $E_0$, $E_1$ y $|\langle g|x|e\rangle|$ en cajas que el computador verifica. No hace falta suponer nada sobre el espectro.
+
+\subsection{C.1 · El residuo tiene forma cerrada (2 puntos)}
+
+Sea $(\lambda, v)$ un par de Ritz de $H_N$, con $v = \sum_{n<N}\psi_n\otimes v_n$, donde cada $v_n \in \mathbb{C}^2$.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item $P(H-\lambda)v = 0$ porque \hueco{30}.
+\item De los tres términos de $H$, ¿cuáles mandan $\mathrm{span}\{\psi_0, \ldots, \psi_{N-1}\}$ fuera de sí mismo? $\tfrac12(p^2 + x^2)$: \hueco{6}; $\tfrac b2\sigma_z$: \hueco{6}; $\eta p\sigma_y$: solo desde $\psi_{N-1}$, porque $p\,\psi_{N-1}$ tiene componente $i\sqrt{N/2}\;\psi_N$.
+\item Por lo tanto $r = (1-P)Hv = $ \hueco{30}, y como $\sigma_y$ es unitaria,
+\[ \|r\| = \eta\,\sqrt{N/2}\;\|v_{N-1}\|. \]
+\end{enumerate}
+¿Por qué este argumento no sirve en el marco rotado? ¿A cuántos niveles conecta $\cos 2\eta x$? Celda C1: ¿cuántos dígitos coinciden la fórmula y el cálculo directo? \hueco{6}
+
+\subsection{C.2 · El rompecabezas: Kato--Temple (3 puntos)}
+
+\textbf{Teorema KT.} Sea $A$ autoadjunto. Suponemos que el intervalo $(\alpha, \beta)$ contiene un solo valor propio $E$ de $A$. Sea $v$ unitario, $\lambda = \langle v, Av\rangle \in (\alpha,\beta)$ y $r = Av - \lambda v$. Entonces
+\[ \lambda - \frac{\|r\|^2}{\beta - \lambda} \;\le\; E \;\le\; \lambda + \frac{\|r\|^2}{\lambda - \alpha}. \]
+Lo demostramos para la cota de la izquierda; la otra es igual.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item Para todo valor propio $t$ de $A$, $(t - E)(t - \beta) \ge 0$ porque \hueco{36}.
+\item Escribiendo $v = \sum_k c_k u_k$ en vectores propios: $\langle (A-E)(A-\beta)v, v\rangle = \sum_k |c_k|^2 (E_k - E)(E_k - \beta) \ge 0$.
+\item $\langle r, v\rangle = 0$, así que $\|Av\|^2 = $ \hueco{14}.
+\item Al expandir 2: $\|Av\|^2 - (E + \beta)\lambda + E\beta \ge 0$, o sea, $\|r\|^2 + (\lambda - E)(\lambda - \beta) \ge 0$.
+\item Como $\beta > \lambda$, despejando: \hueco{30}. ∎
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item Escribe esta demostración como \textbf{grafo}: 6 a 8 nodos (paso + razón) con flechas «depende de», sin repetir nodos y con un distractor conectado. Este grafo es tuyo de principio a fin; anota en la bitácora cualquier ayuda. (1 punto)
+\item \textbf{Lineal contra cuadrático.} La cota de Weinstein dice que hay un valor propio a distancia $\le \|r\|$ de λ. ¿Por qué Kato--Temple es \emph{cuadrática} en $\|r\|$, y cuál es el precio? Demuestra que $\|r\|^2 = \langle v, A^2v\rangle - \lambda^2$: es la varianza σ² de la ecuación (14) de Ronto et al. (1 punto, incluye los huecos)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\subsection{C.3 · Una brecha sin hipótesis (2 puntos)}
+
+Kato--Temple pide β, una cota inferior del valor propio \emph{siguiente}, que no conocemos. El marco rotado nos la regala.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item En el marco rotado, $H' = K + W$, donde $K = \tfrac12(p^2+x^2) - \tfrac{\eta^2}{2}$ tiene niveles $n + \tfrac12 - \tfrac{\eta^2}{2}$, cada uno doble, y $W = \tfrac b2(\sigma_z\cos2\eta x - \sigma_x\sin2\eta x)$. Para cada $x$, la matriz $\sigma_z\cos2\eta x - \sigma_x\sin2\eta x$ tiene valores propios \hueco{8}, así que $\|W\| = b/2$.
+\item \emph{Desigualdad de Weyl (la aceptamos; es una consecuencia del principio min--max):} el $k$-ésimo valor propio de $K+W$ difiere del $k$-ésimo de $K$ en a lo más $\|W\|$. Como el tercer valor propio de $K$ es \hueco{12}, se tiene $E_2 \ge \beta_2 := \tfrac32 - \tfrac{\eta^2}{2} - \tfrac b2$.
+\item Weinstein garantiza un valor propio en $[\lambda_1 - \|r_1\|,\ \lambda_1 + \|r_1\|]$. Si $\lambda_1 - \|r_1\| > \lambda_0$ y $\lambda_1 + \|r_1\| < \beta_2$, ese valor propio no puede ser $E_0$ porque \hueco{24}, ni $E_k$ con $k \ge 2$ porque \hueco{24}. Entonces es $E_1$, y $\beta_1 := \lambda_1 - \|r_1\| \le E_1$.
+\end{enumerate}
+¿Por qué hace falta el marco rotado para el paso 2? ¿Es acotado el término $\eta p\sigma_y$ del marco del laboratorio? ¿Qué condición sobre $b$ aparece? Escribe la frase del artículo: «las dos condiciones del paso 3 se \emph{comprueban} en el computador; no se suponen».
+
+\lineasrespuesta{2}
+
+\subsection{C.4 · El vector y el elemento de Rabi (3 puntos)}
+
+La frecuencia de Rabi no es un valor propio: es $|\langle g|x|e\rangle|$, que depende de los \emph{vectores}.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item \emph{Davis--Kahan, versión de un vector.} Sea $u$ el vector propio de $E$ y $\delta = \min_{E_j\ne E}|E_j - \lambda|$. Con $v = \sum_j c_ju_j$, se tiene $r = \sum_j c_j(E_j - \lambda)u_j$, así que $\|r\|^2 \ge \delta^2 \sum_{j:\,E_j\ne E}|c_j|^2 = \delta^2\sin^2\theta$. Entonces $\sin\theta \le \|r\|/\delta$, donde θ es el ángulo entre $v$ y $u$. Escogiendo la fase de $u$, además, $\|u - v\| \le \sqrt2\sin\theta$ porque \hueco{24}.
+\item \emph{La cota de momento.} Completando el cuadrado, $\tfrac12 p^2 + \eta p\sigma_y = \tfrac12(p + \eta\sigma_y)^2 - \tfrac{\eta^2}{2}$. Por lo tanto $H \ge \tfrac12x^2 - \tfrac{\eta^2}{2} - \tfrac b2$, y para un vector propio, $\|x u_1\|^2 \le 2\bigl(E_1 + \tfrac{\eta^2}{2} + \tfrac b2\bigr) \le$ \hueco{20}.
+\item \emph{Ensamblar.} $\langle u_0|x|u_1\rangle - \langle v_0|x|v_1\rangle = \langle u_0 - v_0|x|u_1\rangle + \langle v_0|x|u_1 - v_1\rangle$. Con Cauchy--Schwarz:
+\[ \bigl|\,|\langle g|x|e\rangle| - |\langle v_0|x|v_1\rangle|\,\bigr| \le \sqrt2\Bigl(\frac{\|r_0\|}{\delta_0}\,\|xu_1\| + \frac{\|r_1\|}{\delta_1}\,\|xv_0\|\Bigr), \]
+con $\delta_0 \ge \beta_1 - \lambda_0$ y $\delta_1 \ge \min(\lambda_1 - \lambda_0,\ \beta_2 - \lambda_1)$. ∎
+\end{enumerate}
+Esta cota es \emph{lineal} en el residuo, no cuadrática. ¿Cuánto cuesta eso en estados? Mira en la celda C4 las columnas «ancho relativo» y «error real». ¿Qué tan pesimista es la caja, y por qué igual sirve?
+
+\lineasrespuesta{3}
+
+\subsection{C.5 · Úsalo a mano: la cota casi se alcanza (1 punto)}
+
+Toma $N = 1$ y $b = 0$. El vector de Ritz es $\psi_0$ con cualquier espín. Calcula λ, $\|r\|$ con C.1 y el valor exacto $E_0$ con A.2. Con $b = 0$ el nivel base es doble, así que β es el nivel siguiente, $\tfrac32 - \tfrac{\eta^2}{2}$. Demuestra que la cota de Kato--Temple vale $\eta^2/(2-\eta^2)$ y el error real, $\eta^2/2$. ¿Qué pasa con el cociente cuando $\eta \to 0$? Compara con la celda C3.
+
+\lineasrespuesta{2}
+
+\subsection{C.6 · Predecir → correr → explicar: el mapa y el agente (3 puntos)}
+
+\textbf{Celda C4.} Predice cuántos de los 35 puntos fallan (la referencia queda fuera de alguna caja): \hueco{6}. Obtenido: \hueco{6}. N máximo usado: \hueco{6}.
+
+\textbf{Celda C5: el resultado central del artículo.} Antes de correr, predice:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+ & mi predicción & obtenido\\
+\midrule
+η donde $\eta b$ pasa del 1 \% (con $b$ pequeño)\filarespuesta & & \\
+η donde $\eta b$ pasa del 10 \%\filarespuesta & & \\
+peor error de $\eta b e^{-\eta^2}$ con $b \le 0{,}02$\filarespuesta & & \\
+error de $\eta b$ en el InAs de Nadj-Perge\filarespuesta & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item Lee los paneles (a) y (b). ¿El error de cuál fórmula depende sobre todo de η, y el de cuál sobre todo de $b$? Explícalo con A.3. ¿Qué le dirías a un grupo experimental que usa la ecuación 2 de Nowack con un nanoalambre de InAs? En el panel (b) hay franjas verticales oscuras cerca de η ≈ 0,7 y η ≈ 1,8. Propón qué las causa: ¿qué le pasa ahí a la corrección siguiente? (1 punto)
+\item \textbf{Celda C6.} ¿Qué aprendió el agente variacional? Usa B.1 para explicar por qué su recompensa se puede hackear. Compáralo con tu Parte III.3: allá un error cero no medía nada; ¿qué no mide aquí una energía baja? (1 punto)
+\item \textbf{Encuentra la fuga.} El $N$ aprendido funciona en el entrenamiento ($\eta \le 0{,}5$) y falla con η grande. Pero además se escoge midiendo el error contra la referencia de 300 estados. ¿Qué información usa esa regla que en un cálculo de verdad no tendrías? ¿Por qué eso hace la comparación injusta a su favor, y qué hace distinto el agente certificado? (1 punto)
+\end{enumerate}
+
+\lineasrespuesta{4}
+
+\begin{quote}
+\textbf{Para el artículo (semana 3).} Sección 4, \emph{Computable enclosures}: C.1 como lema; el teorema KT citando a Temple y a Kato; C.3 y C.4 como proposiciones, con sus demostraciones escritas por ti; C.5 como observación de que la cota es ajustada. Sección 5, \emph{A certified validity map}: la figura de la celda C5 (el cuaderno la guarda como \texttt{fig\_mapa.pdf}), la tabla de C4 y los dos dispositivos. Sección 6, \emph{What an agent learns}: C6, con la fuga de C.6(c) cerrada o declarada.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza D · Escribir y auditar (semana 4 · 14 puntos)}
+
+\subsection{D.1 · Seis fuentes auditadas (6 puntos)}
+
+Las cinco primeras son obligatorias: Golovach--Borhani--Loss (2006), Nowack et al.\ (2007), Li et al.\ (2013), Lombardi et al.\ (2004) y Temple (1928) \emph{o} Kato (1949). La sexta la buscas tú: un trabajo que \emph{certifique} valores propios en un cálculo cuántico, o que use un agente o un algoritmo de búsqueda para escoger una base o una malla. Escribe también qué términos buscaste y dónde. En tu IV.3(b) dijiste con razón que no encontrar no es lo mismo que no existir; aquí el registro de la búsqueda es lo que vuelve auditable esa diferencia.
+
+\begin{longtable}[]{@{}p{0.6cm}p{2.9cm}p{2.2cm}p{4.3cm}p{4.0cm}@{}}
+\toprule
+\# & autores y año & DOI o arXiv & ¿qué afirma? (con tus palabras) & ¿dónde la citamos? \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1\filarespuesta & & & & \\
+2\filarespuesta & & & & \\
+3\filarespuesta & & & & \\
+4\filarespuesta & & & & \\
+5\filarespuesta & & & & \\
+6\filarespuesta & & & & \\
+\end{longtable}
+
+Términos de búsqueda y bases de datos: \hueco{60}
+
+\subsection{D.2 · ¿Qué es nuestro y qué no? (4 puntos, 0,5 cada una)}
+
+Para cada frase candidata al artículo, marca \textbf{N} (nuestro), \textbf{C} (conocido: hay que citarlo) o \textbf{X} (falso o exagerado: no va), y justifica en una línea.
+
+\begin{longtable}[]{@{}p{0.5cm}p{8.7cm}p{1.2cm}p{4.1cm}@{}}
+\toprule
+\# & frase & N/C/X & razón \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1 & ``Somos los primeros en calcular numéricamente la frecuencia de Rabi de la EDSR.'' & & \\
+2 & ``En 1D, la rotación $e^{i\eta x\sigma_y}$ elimina el espín--órbita del término cinético.'' & & \\
+3 & ``En el marco del laboratorio, el residuo de Ritz tiene la forma cerrada $\eta\sqrt{N/2}\,\|v_{N-1}\|$.'' & & \\
+4 & ``Nuestras cajas son rigurosas aunque el computador redondee: no dependen de la aritmética de punto flotante.'' & & \\
+5 & ``Un agente premiado con la energía más baja aprende a preferir la DVR con pocos estados.'' & & \\
+6 & ``La fórmula $|\langle g|x|e\rangle| \approx \eta b e^{-\eta^2}$ es un resultado nuevo.'' & & \\
+7 & ``La ecuación (2) de Nowack et al.\ está equivocada.'' & & \\
+8 & ``Con $b$ pequeño, la fórmula $\eta b$ se equivoca en más del 10 \% desde η ≈ 0,3, y eso lo garantizamos, no solo lo medimos.'' & & \\
+\end{longtable}
+
+\subsection{D.3 · Resumen y límites (4 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item El \emph{abstract} del artículo, en inglés, máximo 150 palabras: la pregunta, qué medimos, los tres números más importantes y qué significan. (2 puntos)
+\item La sección \emph{Limitations}: al menos cuatro límites honestos. Algunas pistas: el modelo es 1D y solo tiene Rashba; los parámetros de InAs mezclan dos dispositivos distintos; las cajas se calculan en punto flotante y solo valen con $b < 1$; en GaAs la fórmula de primer orden ya basta; los «agentes» son búsquedas exhaustivas, no aprendizaje. (2 puntos)
+\end{enumerate}
+
+\begin{quote}
+\textbf{Antes de entregar:} en el cuaderno, \emph{Entorno de ejecución → Reiniciar y ejecutar todo}. Cada cifra del artículo tiene que coincidir con la que imprime la celda. Si no coincide, gana el cuaderno y se corrige el artículo.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza E (opcional) · ¿Dónde vive la naturaleza? (+5 puntos)}
+
+En los dos dispositivos de electrones, η es pequeño. Pero existen sistemas donde el espín--órbita es mucho más fuerte. Por ejemplo, Froning et al.\ (Nature Nanotechnology, 2021, arXiv:2006.11175) reportan en huecos de nanoalambres de Ge/Si una longitud de espín--órbita sintonizable hasta unos pocos nanómetros.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item Encuentra y verifica los parámetros de un dispositivo con espín--órbita fuerte: la energía orbital o el tamaño del punto, $|g|$, la frecuencia de excitación y $\ell_{\mathrm{so}}$. Agrégalo en la celda E1. ¿Qué η te da? (2 puntos)
+\item Si η es grande, el desdoblamiento $\approx b\,e^{-\eta^2}$ se vuelve diminuto. ¿Qué significa eso físicamente? ¿Cuántos estados pide el certificado? (1 punto)
+\item ¿Es razonable el modelo 1D con Rashba para huecos? Busca una fuente que lo discuta y escribe el párrafo \emph{Future work}. (2 puntos)
+\end{enumerate}
+
+\lineasrespuesta{4}
+
+\clearpage
+\section{Bitácora de IA}
+
+Una fila por cada uso, desde la semana 1. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}p{1.4cm}p{3.6cm}p{4.6cm}p{4.6cm}@{}}
+\toprule
+Pieza & Qué le pedí & Qué me respondió, en una línea & Qué comprobé o corregí yo, y cómo \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el 26 de noviembre)}
+
+\textbf{Pieza sorteada:} \hueco{14}
+
+\begin{itemize}
+\item[$\square$] Explica la pieza con sus palabras, sin leer la guía
+\item[$\square$] Reproduce en el tablero el paso clave (la rotación, el argumento de Ritz, el residuo o Kato--Temple)
+\item[$\square$] Responde una variante: otro η, otro $b$, otro $N$
+\item[$\square$] Lo que dice coincide con el artículo, el cuaderno y su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 (+ extra \hueco{4}) \textbf{Nota final:} \hueco{6}
+
+\end{document}

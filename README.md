@@ -32,3 +32,4 @@ Para guardar tus cambios en el cuaderno: en Colab, *Archivo → Guardar una copi
 | Trabajo | Tema | Guía | Cuaderno |
 |---|---|---|---|
 | Del NodoBot al preprint (Juan Pablo) | Baricéntrica, desigualdad de Lebesgue, selección de nodos en 216 países, AAA | [PDF](trabajo-final-nodobot/guia.pdf) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cmorregof/methods_exam/blob/main/trabajo-final-nodobot/trabajo_final_nodobot.ipynb) |
+| Girar un espín con un campo eléctrico (Samuel) | EDSR, DVR de Gauss–Hermite, cotas de Kato–Temple y Weyl, mapa certificado de validez | [PDF](trabajo-final-espin/guia.pdf) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cmorregof/methods_exam/blob/main/trabajo-final-espin/trabajo_final_espin.ipynb) |
