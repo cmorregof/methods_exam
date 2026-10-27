@@ -26,3 +26,9 @@ Cada estudiante tiene un parcial distinto; el profesor te dice en Classroom cuá
 4. **Jueves 22 de octubre:** entregas la guía al empezar la clase y sustentas 10 minutos un punto sorteado.
 
 Para guardar tus cambios en el cuaderno: en Colab, *Archivo → Guardar una copia en Drive*.
+
+## Trabajo final
+
+| Trabajo | Tema | Guía | Cuaderno |
+|---|---|---|---|
+| Del NodoBot al preprint (Juan Pablo) | Baricéntrica, desigualdad de Lebesgue, selección de nodos en 216 países, AAA | [PDF](trabajo-final-nodobot/guia.pdf) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cmorregof/methods_exam/blob/main/trabajo-final-nodobot/trabajo_final_nodobot.ipynb) |

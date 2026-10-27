@@ -1,0 +1,410 @@
+\input{preambulo_examen}
+\newcommand{\docpie}{Trabajo final · Del NodoBot al preprint}
+
+% Cabecera propia del trabajo final (misma estética que los parciales)
+\newcommand{\cabeceratf}[3]{%
+  \thispagestyle{fancy}%
+  \noindent\begin{minipage}[t]{0.64\textwidth}\small
+    \textsc{Universidad Nacional de Colombia}\\
+    Sede Manizales · Departamento de Matemáticas y Estadística
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.34\textwidth}\small\raggedleft
+    \textsc{Métodos Numéricos}\\
+    Semestre 2026-2
+  \end{minipage}\par\vspace{5pt}
+  \hrule height 0.8pt\vspace{1.5pt}\hrule height 0.3pt
+  \vspace{14pt}
+  \begin{center}
+    {\small\scshape Trabajo final · cuatro semanas}\\[6pt]
+    {\LARGE\bfseries #1}\\[5pt]
+    {\large\itshape #2}\\[8pt]
+    {\small #3}
+  \end{center}
+  \vspace{4pt}
+  \noindent\textbf{Nombre:}\ Juan Pablo Esteban Ojeda\hfill\textbf{Coautor y director:}\ Carlos Orrego\par\vspace{10pt}
+  \begin{center}
+  \begin{tabular}{l*{6}{>{\centering\arraybackslash}p{1.3cm}}}
+    \toprule
+    Pieza & A & B & C & D & \textbf{Total} & E (extra)\\
+    \midrule
+    Puntos & 10 & 12 & 14 & 14 & \textbf{50} & +5\\
+    Semana & 1 & 2 & 3 & 4 & & 4\\
+    \midrule
+    Obtenidos\rule[-0.45cm]{0pt}{1.0cm} & & & & & & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{2pt}}
+
+\begin{document}
+\cabeceratf{Del NodoBot al preprint}{Escoger años con datos, certificarlo con Lebesgue y escribirlo como artículo}{Entregas: jueves 5, 12 y 19 de noviembre · Entrega final y sustentación: jueves 26 de noviembre de 2026}
+
+En tu parcial pasaron tres cosas que valen más que la nota. En la diapositiva 24 explicaste por qué una recompensa medida en los propios nodos vale cero para cualquier conjunto. En la 25 mostraste que NodoBot le gana a Chebyshev en Colombia y pierde en Perú, y concluiste que había aprendido \emph{una propiedad de los datos, no de los nodos}. Y en la 29 escribiste cinco condiciones para que un experimento con un agente tenga sentido. Eso es, casi palabra por palabra, la sección de metodología de un artículo.
+
+Este trabajo convierte esas tres ideas en un resultado medido en \textbf{216 países}, con una cota que vas a demostrar tú y que el computador puede calcular. Cada semana terminas una pieza del rompecabezas y una sección del artículo. Al final tendrás un borrador de \emph{preprint}, escrito contigo como primer autor, que pulimos juntos y subimos a arXiv. Después lo enviamos a \emph{SIAM Undergraduate Research Online} (SIURO), la revista de SIAM para investigación de pregrado.
+
+\begin{quote}
+\textbf{La pregunta del artículo.} Con los 61 datos anuales de población de un país (1960--2020), escogemos 13 años e interpolamos. ¿Cuánto se puede mejorar a Chebyshev escogiendo los años \emph{mirando los datos}? ¿Cuánto cuesta esa mejora en estabilidad? ¿Y lo que aprende un agente en unos países sirve en otros?
+\end{quote}
+
+\textbf{Materiales.} El cuaderno \texttt{trabajo\_final\_nodobot.ipynb} (repositorio del curso, carpeta \texttt{trabajo-final-nodobot}, botón «Open in Colab») y la plantilla del artículo \texttt{preprint/nodobot\_preprint.tex}, que puedes abrir en Overleaf. Las lecturas tienen secciones y páginas exactas: no tienes que leer ningún artículo completo.
+
+\section{Reglas}
+
+\begin{itemize}
+\tightlist
+\item \textbf{Cada jueves entregas una pieza}: esta guía con las respuestas de esa pieza a mano, y la sección del artículo que le corresponde en la plantilla. Te devuelvo comentarios antes de la pieza siguiente, para que el artículo crezca corregido.
+\item \textbf{El ritual de siempre.} Antes de correr cada celda escribes tu predicción aquí; la predicción escrita después de correr no cuenta. La predicción equivocada no quita puntos; la explicación vacía, sí.
+\item \textbf{Puedes usar IA, y te audito.} Llena la bitácora del final. Puedes usar IA para traducir al inglés tus borradores y para entender lecturas, pero \textbf{las demostraciones y la interpretación de los resultados son tuyas}. Toda referencia que entre al artículo la abres tú y la verificas tú.
+\item \textbf{El artículo va en inglés.} Si te ayuda, escribe cada sección primero en español y tradúcela al final de la semana.
+\item \textbf{Sustentación (jueves 26 de noviembre, 15 minutos).} Se sortea una pieza y la explicas en el tablero, sin la guía, con una variante (otro país, otro k, otro Λ\textsubscript{máx}). La nota escrita se multiplica por 1, 0,6 o 0,2, igual que en el parcial.
+\item \textbf{Qué cuenta.} Una justificación clara con un error de cuenta vale mucho; si algo de esta guía te parece mal planteado, dilo y explica por qué: eso también se califica. Hay al menos un diseño con una fuga deliberada (pieza C). Encontrarla es parte del trabajo.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza A · La forma baricéntrica (semana 1 · 10 puntos)}
+
+\textbf{Lectura.} J.-P. Berrut y L. N. Trefethen, \emph{Barycentric Lagrange Interpolation}, SIAM Review 46(3), 2004. Secciones 2 a 4 (pp. 502--505) y sección 7 (p. 509). Es la primera fuente de tu presentación: ahora la vas a usar de verdad.
+
+\subsection{A.1 · Completa la derivación (4 puntos)}
+
+Sean x₀, \ldots, xₙ nodos distintos, \(\ell(x) = (x-x_0)(x-x_1)\cdots(x-x_n)\) y los \emph{pesos baricéntricos}
+\[ w_j = \frac{1}{\prod_{k\neq j}(x_j - x_k)}, \qquad j = 0, \ldots, n. \]
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item Para x que no es nodo, \(L_j(x) = \ell(x)\,\dfrac{w_j}{x - x_j}\) porque \hueco{40}.
+\item Por tanto \(P(x) = \sum_j y_j L_j(x) = \ell(x)\,\sum_j \dfrac{w_j\,y_j}{x-x_j}\). Esta es la \emph{primera forma} (Berrut y Trefethen la llaman ``fórmula de Lagrange mejorada'').
+\item Si los datos son \(y_j = 1\) para todo j, el interpolante es el polinomio constante 1, porque \hueco{30} (pista: es tu Parte I del parcial). Entonces \(1 = \ell(x)\,\sum_j \dfrac{w_j}{x-x_j}\).
+\item Dividiendo 2 entre 3, \(\ell(x)\) se cancela y queda la \textbf{segunda forma baricéntrica}:
+\[ P(x) = \frac{\displaystyle\sum_{j=0}^{n} \frac{w_j\,y_j}{x-x_j}}{\displaystyle\sum_{j=0}^{n} \frac{w_j}{x-x_j}}. \]
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item ¿En qué paso se usa que x \textbf{no} es un nodo? ¿Qué vale P(xⱼ), y cómo lo resuelve el código del cuaderno (función \texttt{bary})? (1 punto)
+\item ¿En qué paso se usa la \textbf{unicidad} del polinomio interpolante? (1 punto)
+\item Cuenta operaciones: una vez calculados los pesos, ¿cuántas operaciones cuesta evaluar P en un punto con la segunda forma? ¿Y con el doble ciclo del parcial? (2 puntos, incluye llenar los huecos 1 y 3)
+\end{enumerate}
+
+\subsection{A.2 · Úsala a mano (2 puntos)}
+
+Nodos 2, 3, 4 y f(x) = 1/x, como en la Parte I.3 de tu parcial. Calcula w₀, w₁, w₂ y P(2,5) con la segunda forma, como fracción. Después corre la celda A1.
+
+Pesos: \hueco{30} \quad P(2,5) = \hueco{10}
+
+En tu parcial escribiste P(2,5) = 11/48 y en tus diapositivas, 13/32. ¿Cuál es? Si encuentras el error de la cuenta vieja, di cuál fue: eso vale tanto como la cuenta nueva.
+
+\lineasrespuesta{2}
+
+\subsection{A.3 · Predecir → correr → explicar (4 puntos)}
+
+\textbf{Celda A2.} El mismo polinomio de los años equiespaciados de Colombia, evaluado de cuatro maneras: (1) monomios en años, (2) monomios en s = (año − 1990)/30, (3) Lagrange con doble ciclo, (4) baricéntrica.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item \textbf{Predice:} ¿cuáles de las cuatro coinciden? ¿Alguna falla \emph{en los propios nodos}, donde el polinomio debería pasar exactamente por los datos?
+
+Predicción: \hueco{40}
+
+\item Anota, para k = 13: el error en los nodos de (1) \hueco{8} y el número de condición de la matriz de Vandermonde en años \hueco{8} y en s \hueco{8}.
+\item Explica la tabla. En tu parcial (IV.3) dijiste que la baricéntrica es mejor porque usa ``menos operaciones''. Eso es cierto (celda A3), pero no es lo que Berrut y Trefethen llaman \emph{estabilidad}. Con la sección 7 de la lectura, explica qué es lo que falla en (1) y por qué (3) y (4) no tienen ese problema. ¿Qué significa que (2) se deteriore cuando k crece?
+\end{enumerate}
+
+\lineasrespuesta{4}
+
+\textbf{Celda A3.} Predice cuántas veces más lento es el doble ciclo que la baricéntrica con 61 nodos: \hueco{8}. Obtenido: \hueco{8}. ¿Coincide con tu conteo de A.1(c)? Si no, ¿por qué?
+
+\begin{quote}
+\textbf{Para el artículo (semana 1).} Escribe la sección 2 de la plantilla, \emph{Barycentric interpolation}: la segunda forma, por qué es estable (citando a Berrut y Trefethen y a Higham), y el cambio de variable s. Media página. Ninguna fórmula que no puedas explicar en el tablero.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza B · El rompecabezas de Lebesgue (semana 2 · 12 puntos)}
+
+\textbf{Lecturas.} Berrut y Trefethen, sección 9.1, \emph{Estimation of the Lebesgue Constant} (p. 511). Platte, Trefethen y Kuijlaars, \emph{Impossibility of Fast Stable Approximation of Analytic Functions from Equispaced Samples}, SIAM Review 53(2), 2011: solo la introducción. Boyd y Xu (2009), \emph{Divergence (Runge phenomenon) for least-squares polynomial approximation on an equispaced grid and Mock--Chebyshev subset interpolation}: el resumen y la parte donde definen la malla mock-Chebyshev.
+
+En el parcial calculaste errores. Aquí vas a demostrar que el error de \emph{cualquier} elección de años queda atrapado entre dos números que el computador puede calcular. Uno no depende de los nodos: es lo mejor que un polinomio puede hacer. El otro es ese mismo número multiplicado por 1 + Λ. Las piezas del rompecabezas ya las tienes: la unicidad (tu Parte I), la constante de Lebesgue (tu diapositiva 18) y la desigualdad triangular.
+
+\subsection{B.1 · Completa la demostración (5 puntos)}
+
+\textbf{Teorema L (cota de dos lados).} Sea X = \{1960, 1961, \ldots, 2020\} y sean f(x), x ∈ X, los datos. Sea \(S \subset X\) un conjunto de n + 1 años distintos, P\textsubscript{S} el polinomio de grado ≤ n que interpola los datos en S, y
+\[ E = \min_{p \in \Pi_n}\ \max_{x\in X} |f(x) - p(x)|, \qquad \Lambda_S = \max_{t\in[1960,\,2020]}\ \sum_{j} |L_j(t)|. \]
+Entonces
+\[ E \;\le\; \max_{x\in X} |f(x) - P_S(x)| \;\le\; (1 + \Lambda_S)\, E. \]
+
+E es el \emph{piso minimax discreto}: el mejor error máximo que puede lograr \emph{cualquier} polinomio de grado ≤ n en los 61 años, interpole o no. Aceptamos sin demostración que existe un p* ∈ Πₙ que lo alcanza.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item \emph{Cota inferior.} P\textsubscript{S} ∈ Πₙ, así que \(\max_X|f - P_S| \ge E\) porque \hueco{36}.
+\item \emph{Linealidad.} Para datos g en los nodos, el interpolante es \(I_S g(t) = \sum_j g(x_j) L_j(t)\). Entonces \(I_S(g + h) = \)\hueco{18}.
+\item \emph{Reproducción.} \(I_S\,p^* = p^*\) porque \hueco{40}.
+\item Por 2 y 3, \(f - P_S = (f - p^*) - I_S(f - p^*)\). Llama g = f − p*.
+\item \emph{El paso clave.} Para t ∈ [1960, 2020]: \(|I_S\, g(t)| \le \sum_j |g(x_j)|\,|L_j(t)| \le \bigl(\max_j |g(x_j)|\bigr)\,\Lambda_S \le\) \hueco{6}\(\cdot\Lambda_S\), porque cada nodo xⱼ pertenece a \hueco{10}.
+\item \emph{Cierre.} Para x ∈ X, \(|f(x) - P_S(x)| \le |g(x)| + |I_S\, g(x)| \le\) \hueco{6} + \hueco{8}. ∎
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item ¿En qué paso se usa que los nodos son \textbf{años con dato}? Si usáramos los nodos exactos de Chebyshev (1987,35 y compañía), ¿qué paso deja de funcionar y por qué? (1 punto)
+\item Λ\textsubscript{S} se calcula en todo el intervalo, pero la demostración solo necesita los 61 años. ¿Por qué el teorema sigue siendo cierto con el máximo en el intervalo? ¿La cota es más o menos ajustada así? (1 punto)
+\end{enumerate}
+
+\subsection{B.2 · Úsalo a mano: la cota se alcanza (3 puntos)}
+
+Toma X = \{0, 1, 2\}, datos f(0) = 0, f(1) = 0, f(2) = 1, y polinomios de grado ≤ 1 (dos nodos).
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item Verifica que p*(x) = x/2 − 1/4 tiene error +1/4, −1/4, +1/4 en los tres puntos, así que E ≤ 1/4. (Que E = 1/4 exactamente lo da la alternancia de signos; acéptalo.)
+\item Para cada uno de los tres conjuntos de nodos, S = \{0, 2\}, \{0, 1\} y \{1, 2\}, calcula P\textsubscript{S}, su error máximo en X, la razón error/E y Λ\textsubscript{S} en [0, 2].
+\item ¿En cuántos de los tres casos el error es \emph{exactamente} (1 + Λ\textsubscript{S})E? ¿Qué te dice eso de la calidad de la cota?
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+S & P\textsubscript{S}(x) & error máx & error/E & Λ\textsubscript{S}\\
+\midrule
+\{0, 2\}\filarespuesta & & & & \\
+\{0, 1\}\filarespuesta & & & & \\
+\{1, 2\}\filarespuesta & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{B.3 · Predecir → correr → explicar (4 puntos)}
+
+\textbf{Celda B1} (Colombia, 13 años). Predice error/E para cada conjunto antes de correr.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+conjunto & mi predicción error/E & obtenido error/E & Λ & 1 + Λ\\
+\midrule
+equiespaciados\filarespuesta & & & & \\
+Chebyshev\filarespuesta & & & & \\
+mock-Chebyshev\filarespuesta & & & & \\
+NodoBot (tu parcial)\filarespuesta & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item E = \hueco{8} M. ¿Cuántas veces el piso está Chebyshev? ¿Y NodoBot? Con 13 nodos, ¿cuánto margen había \emph{de verdad} para mejorar a Chebyshev?
+\item En B.2 la cota se alcanzó. Para NodoBot, la cota superior es más de cincuenta veces su error real. ¿Contradice eso a B.2? ¿Qué te dice de usar 1 + Λ como \emph{predicción} del error, y no solo como garantía? (Recuerda el ejercicio de la clase del 1 de octubre: la cota de √x fue más de 30 veces pesimista.)
+\end{enumerate}
+
+\lineasrespuesta{3}
+
+\textbf{Celda B2.} En tu parcial (afirmación 6) dijiste que un error de 0,01 M en un dato puede mover el polinomio de NodoBot hasta Λ·0,01 ≈ 0,83 M. Predice el peor cambio \emph{real} al perturbar \textbf{un solo} dato: Chebyshev \hueco{8}, NodoBot \hueco{8}. ¿Por qué el cambio real es menor que Λ·0,01? ¿Qué tendría que pasar con los signos de los errores en los datos para alcanzar la cota?
+
+\textbf{Celda B3.} Relaciona su salida con tu respuesta a B.1(a).
+
+\begin{quote}
+\textbf{Para el artículo (semana 2).} Sección 3, \emph{A two-sided certificate}: el teorema L con tu demostración, el ejemplo de B.2 como observación de que la cota es ajustada, y una frase honesta: este teorema es la desigualdad de Lebesgue clásica, en versión discreta; no es nuestro. Lo nuestro es usarlo como \emph{regla de medir}: reportar cada error en veces el piso.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza C · NodoBot de verdad (semana 3 · 14 puntos)}
+
+\textbf{Lectura.} R. S. Sutton y A. G. Barto, \emph{Reinforcement Learning: An Introduction}, 2.ª ed., MIT Press, 2018 (libre en \texttt{incompleteideas.net/book/the-book-2nd.html}). Capítulo 3, secciones 3.1 y 3.2: la interfaz agente–entorno y la hipótesis de la recompensa.
+
+\subsection{C.1 · Formaliza el agente (4 puntos)}
+
+Completa la tabla. Va casi tal cual al artículo.
+
+\begin{center}
+\begin{tabular}{p{3.2cm}p{11.2cm}}
+\toprule
+\textbf{Estado} \(S_t\) & \hueco{60} \\[6pt]
+\textbf{Acciones} & mover el año número p un paso, \(a_t\) = (p, ±1), o \hueco{18} \\[6pt]
+\textbf{Transición} & ¿determinista o aleatoria? ¿Por qué? \hueco{40}\\[6pt]
+\textbf{Recompensa} & \(r_t = \bigl(\mathrm{err}(S_t) - \mathrm{err}(S_{t+1})\bigr)/E\), con err(S) = máx en X de |f − P\textsubscript{S}| \\[6pt]
+\textbf{Verificador} & solo se permiten acciones que llevan a conjuntos con \hueco{20} \\[6pt]
+\textbf{Fin del episodio} & \hueco{50} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item Demuestra que el retorno de un episodio, \(\sum_t r_t\), es igual a \hueco{36}. ¿Por qué esta recompensa no se puede hackear como la de la afirmación 7 de tu parcial? (2 puntos)
+\item La celda C1 juega un episodio con la política ``toma la mejor acción permitida''. Esa política no aprende nada: es búsqueda local. ¿Qué tendría que cambiar para que hubiera \emph{aprendizaje}? Pista: ¿qué ve la política cuando llega un país nuevo? (1 punto)
+\end{enumerate}
+
+\subsection{C.2 · Los 216 países (6 puntos)}
+
+\textbf{Celda C2.} Predice la mediana de error/E de cada regla en los 216 países, antes de correr.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+regla & ¿mira los datos? & mi predicción & mediana obtenida & mediana de Λ\\
+\midrule
+equiespaciados\filarespuesta & no & & & \\
+Chebyshev\filarespuesta & no & & & \\
+mock-Chebyshev\filarespuesta & no & & & \\
+voraz (la regla de AAA)\filarespuesta & sí & & & \\
+NodoBot (búsqueda local)\filarespuesta & sí & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item La regla voraz (agregar el año de mayor error) es la misma idea con la que AAA escoge sus puntos. Aquí sale mal. Mira su Λ y propón por qué perseguir el error más grande \emph{ahora} no es buena estrategia para un polinomio.
+\item ¿En qué fracción de países NodoBot le gana a Chebyshev? ¿Te sorprende, después de Perú?
+\end{enumerate}
+
+\textbf{Celda C3: el experimento que responde a tu diapositiva 25.} Un solo conjunto ``universal'' de 13 años, entrenado en 108 países y probado en otros 108 que nunca vio.
+
+Predicción (¿le gana a Chebyshev en los países nuevos?): \hueco{40}
+
+Obtenido: mediana en entrenamiento \hueco{6}; en prueba \hueco{6}; Chebyshev en prueba \hueco{6}; fracción de países nuevos donde gana \hueco{6}.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\item Este es el resultado central del artículo. Explícalo con la fórmula del error de tu parcial: ¿qué factor controla Chebyshev, que es igual para todos los países, y qué factor explota NodoBot, que cambia de país en país? ¿Por qué un conjunto universal no puede ganarle mucho a Chebyshev?
+\end{enumerate}
+
+\lineasrespuesta{4}
+
+\textbf{Celda C4: el verificador.} Predice la mediana de error/E con Λ\textsubscript{máx} = 3: \hueco{6}, con 5: \hueco{6}, con 10: \hueco{6}. Obtenido: \hueco{6}, \hueco{6}, \hueco{6}.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{3}
+\item ¿Cuánto cuesta la estabilidad? Escribe la frase que resume la tabla, en el estilo de tus conclusiones de la diapositiva 32.
+\end{enumerate}
+
+\subsection{C.3 · Datos que no se usaron (2 puntos)}
+
+\textbf{Celda C5.} NodoBot escoge mirando solo los años pares y se evalúa en los impares. Predice si sobrevive la ventaja: \hueco{30}. Obtenido: \hueco{20}.
+
+\subsection{C.4 · Encuentra la fuga (2 puntos)}
+
+El diseño de la celda C5 tiene una fuga: algo que le regala al agente parte de su ventaja. Tu diapositiva 24 tiene la pista. ¿Cuál es? Propón cómo cerrarla, cámbialo en el cuaderno y reporta la cifra nueva. Si la ventaja se achica, eso es un resultado, no un fracaso: va al artículo así.
+
+\lineasrespuesta{3}
+
+\begin{quote}
+\textbf{Para el artículo (semana 3).} Sección 4, \emph{Node selection as a Markov decision process} (tu tabla de C.1 en LaTeX), y sección 5, \emph{Experiments}, con las tablas de C.2--C.4 y la cifra corregida de C.4. Cada número del artículo sale de una celda que corre de arriba abajo.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza D · Escribir y auditar (semana 4 · 14 puntos)}
+
+\subsection{D.1 · Seis fuentes auditadas (6 puntos)}
+
+Las cinco primeras son obligatorias: Berrut--Trefethen (2004), Platte--Trefethen--Kuijlaars (2011), Boyd--Xu (2009), Nakatsukasa--Sète--Trefethen (2018, AAA) y Sutton--Barto (2018). La sexta la buscas tú: un trabajo que use aprendizaje automático o búsqueda para escoger nodos o puntos de muestreo. Una nota pendiente de tu parcial: en IV.2 citaste ``Zi Wang 2020'' como fuente sobre aprendizaje por refuerzo. Encuéntrala (título, revista o arXiv) o declara que no existe. Las dos respuestas valen lo mismo.
+
+\begin{longtable}[]{@{}p{0.6cm}p{2.9cm}p{2.2cm}p{4.3cm}p{4.0cm}@{}}
+\toprule
+\# & autores y año & DOI o arXiv & ¿qué afirma? (con tus palabras) & ¿dónde la citamos? \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1\filarespuesta & & & & \\
+2\filarespuesta & & & & \\
+3\filarespuesta & & & & \\
+4\filarespuesta & & & & \\
+5\filarespuesta & & & & \\
+6\filarespuesta & & & & \\
+\end{longtable}
+
+\subsection{D.2 · ¿Qué es nuestro y qué no? (4 puntos, 0,5 cada una)}
+
+Para cada frase candidata al artículo, marca \textbf{N} (nuestro), \textbf{C} (conocido: hay que citarlo) o \textbf{X} (falso o exagerado: no va), y justifica en una línea. Es el mismo ejercicio de tu diapositiva 30, ahora con la lupa puesta en nosotros.
+
+\begin{longtable}[]{@{}p{0.5cm}p{9.4cm}p{0.9cm}p{4.2cm}@{}}
+\toprule
+\# & frase & N/C/X & razón \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1 & ``Somos los primeros en escoger nodos de interpolación a partir de datos.'' & & \\
+2 & ``La cota E ≤ error ≤ (1 + Λ)E es un teorema nuevo.'' & & \\
+3 & ``Medimos, en 216 series reales, a cuántas veces del piso minimax queda cada regla de selección.'' & & \\
+4 & ``Un conjunto universal aprendido no mejora a Chebyshev fuera de la muestra de entrenamiento.'' & & \\
+5 & ``NodoBot es un agente de aprendizaje por refuerzo profundo.'' & & \\
+6 & ``Con Λ ≤ 5 se conserva casi toda la ventaja de escoger con los datos.'' & & \\
+7 & ``Nuestro método sirve para cualquier función.'' & & \\
+8 & ``Desde datos equiespaciados ningún método estable converge geométricamente para todas las funciones analíticas.'' & & \\
+\end{longtable}
+
+\subsection{D.3 · Resumen y límites (4 puntos)}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item El \emph{abstract} del artículo, en inglés, máximo 150 palabras: la pregunta, qué medimos, los tres números más importantes y qué significan. (2 puntos)
+\item La sección \emph{Limitations}: al menos cuatro límites honestos. Algunos pistas: un solo k; solo población; búsqueda local en lugar de aprendizaje; la fuga de C.4; el piso es discreto, no continuo. (2 puntos)
+\end{enumerate}
+
+\begin{quote}
+\textbf{Antes de entregar:} en el cuaderno, \emph{Entorno de ejecución → Reiniciar y ejecutar todo}. Cada cifra del artículo tiene que coincidir con la que imprime la celda. Si no coincide, gana el cuaderno y se corrige el artículo.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Pieza E (opcional) · El mismo problema con AAA (+5 puntos)}
+
+\textbf{Lecturas.} Nakatsukasa, Sète y Trefethen, \emph{The AAA Algorithm for Rational Approximation}, SIAM J. Sci. Comput. 40(3), 2018: secciones 1 a 3. Para curiosos: Gilles y Wilber (2026, arXiv 2601.22344), sección 5.3, donde la regla voraz de AAA se lee como una estrategia de pivoteo.
+
+AAA escoge \emph{puntos de soporte} con la misma regla voraz de C.2, pero arma un cociente en forma baricéntrica, con pesos libres. Esta pieza conecta tu trabajo con la idea con la que empezaste: un agente que escoge los puntos de AAA, con un verificador.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item \textbf{Celda E1.} Predice: con 13 puntos de soporte, ¿puede AAA quedar por debajo del piso E de los polinomios? \hueco{20} Obtenido: \hueco{12}. ¿Cómo es posible que le gane a \emph{todos} los polinomios de grado 12? (Cuenta los grados de libertad.) (1 punto)
+\item \textbf{Celda E2.} Con 21 puntos de soporte aparecen polos reales \emph{entre} dos años. ¿A qué distancia del polo hay que acercarse para que r se dispare? ¿Por qué el error medido en los 61 datos no lo ve? Relaciónalo con tu diapositiva 24. (2 puntos)
+\item En cuántos de los 216 países tiene AAA (13 puntos) un polo dentro de [1960, 2020]? \hueco{8}. En los que no, ¿a cuántas veces el piso polinomial queda? \hueco{8}. Escribe el párrafo \emph{Future work} del artículo: qué verificador necesitaría un agente que escoja los puntos de AAA, y por qué ``sin polos en el dominio'' no se puede comprobar solo en los datos. (2 puntos)
+\end{enumerate}
+
+\lineasrespuesta{4}
+
+\section{Bitácora de IA}
+
+Una fila por cada uso. Si no usaste IA, escribe «No usé IA» y firma.
+
+\begin{longtable}[]{@{}p{1.4cm}p{3.6cm}p{4.6cm}p{4.6cm}@{}}
+\toprule
+Pieza & Qué le pedí & Qué me respondió, en una línea & Qué comprobé o corregí yo, y cómo \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\filarespuesta & & & \\
+\end{longtable}
+
+\textbf{Firma:} \hueco{30}
+
+\section{Sustentación (la llena el profesor el 26 de noviembre)}
+
+\textbf{Pieza sorteada:} \hueco{14}
+
+\begin{itemize}
+\item[$\square$] Explica la pieza con sus palabras, sin leer la guía
+\item[$\square$] Reproduce en el tablero el paso clave (la derivación, la demostración o la tabla del agente)
+\item[$\square$] Responde una variante: otro país, otro k, otro Λ\textsubscript{máx}
+\item[$\square$] Lo que dice coincide con el artículo, el cuaderno y su bitácora
+\end{itemize}
+
+\textbf{Factor:} 1 ☐ 0,6 ☐ 0,2 ☐ \textbf{Nota escrita:} \hueco{6} / 50 (+ extra \hueco{4}) \textbf{Nota final:} \hueco{6}
+
+\end{document}

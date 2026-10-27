@@ -1,0 +1,90 @@
+% Plantilla del preprint · compila con pdflatex (Overleaf o arXiv)
+% Cada bloque [TODO ...] dice qué pieza de la guía lo llena. Borra los [TODO] al terminar.
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,booktabs,xcolor}
+\usepackage[margin=25mm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newcommand{\todo}[1]{\textcolor{red!70!black}{[TODO: #1]}}
+
+\title{How Much Can Data-Adapted Node Selection Beat Chebyshev?\\
+\large A Certified Study on 216 Population Series}
+\author{Juan Pablo Esteban Ojeda\thanks{Universidad Nacional de Colombia, Sede Manizales.}
+\and Carlos Manuel Orrego Franco\footnotemark[1]}
+\date{\todo{date}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Pieza D.3(a). At most 150 words: the question, what we measure, the three most important numbers, what they mean.}
+\end{abstract}
+
+\section{Introduction}
+Given $61$ yearly values of a country's population (1960--2020), we keep only $13$ of them and reconstruct the rest by polynomial interpolation. Which years should we keep?
+\todo{Pieza D. One page: why the choice of nodes matters (Runge; Platte--Trefethen--Kuijlaars \cite{ptk2011}); data-free rules (Chebyshev, mock-Chebyshev \cite{boydxu2009}); the question of data-adapted selection; our three contributions, stated with the care of D.2.}
+
+\section{Barycentric interpolation}\label{sec:bary}
+\todo{Pieza A. The second barycentric form, its derivation in four steps, why it is stable \cite{berruttrefethen2004,higham2004}, and the change of variable $s=(\text{year}-1990)/30$.}
+
+\section{A two-sided certificate}\label{sec:cert}
+Let $X=\{1960,\dots,2020\}$, let $S\subset X$ contain $n+1$ distinct years, and let $P_S$ interpolate the data $f$ on $S$. Define
+\[
+E=\min_{p\in\Pi_n}\max_{x\in X}|f(x)-p(x)|,\qquad
+\Lambda_S=\max_{t\in[1960,2020]}\sum_j|L_j(t)|.
+\]
+\begin{theorem}\label{thm:L}
+$E\le \max_{x\in X}|f(x)-P_S(x)|\le(1+\Lambda_S)\,E.$
+\end{theorem}
+\begin{proof}
+\todo{Pieza B.1, in your own words.}
+\end{proof}
+\begin{remark}
+\todo{Pieza B.2: the bound is attained (the three-point example). Pieza B.3: it can also be very loose.}
+This is the classical Lebesgue inequality \cite{trefethen2013} in a discrete form; our use of it is as a yardstick: every error below is reported as a multiple of $E$.
+\end{remark}
+
+\section{Node selection as a Markov decision process}\label{sec:mdp}
+\todo{Pieza C.1: the table (state, actions, transition, reward, verifier, end of episode), the telescoping return, and an honest sentence on search versus learning \cite{suttonbarto2018}.}
+
+\section{Experiments}\label{sec:exp}
+Data: total population (World Bank indicator SP.POP.TOTL), the $216$ countries with complete data for 1960--2020, aggregates excluded; frozen copy of 27 October 2026.
+
+\begin{table}[h]\centering
+\caption{Error as a multiple of the minimax floor $E$, $13$ nodes, $216$ countries. \todo{Pieza C.2: fill from cell C2.}}
+\begin{tabular}{lccc}\toprule
+rule & uses data? & median error$/E$ & median $\Lambda$\\\midrule
+equispaced & no & & \\
+Chebyshev (nearest years) & no & & \\
+mock-Chebyshev & no & & \\
+greedy (AAA rule) & yes & & \\
+local search (NodoBot) & yes & & \\\bottomrule
+\end{tabular}\end{table}
+
+\todo{Pieza C.2--C.4: the universal-set experiment (train/test), the verifier table for $\Lambda_{\max}\in\{3,5,10\}$, the held-out-years experiment with the leak closed.}
+
+\section{Related work}
+\todo{Pieza D.1: the six audited sources, each in one or two sentences, and how we differ.}
+
+\section{Limitations and future work}
+\todo{Pieza D.3(b): at least four limitations. Pieza E: rational approximation with AAA \cite{aaa2018,nt2026}, spurious poles between data years, and the verifier an agent choosing AAA support points would need \cite{gilleswilber2026}.}
+
+\section*{Reproducibility}
+All numbers come from the notebook \texttt{trabajo\_final\_nodobot.ipynb} in \url{https://github.com/cmorregof/methods_exam}, run top to bottom.
+
+\begin{thebibliography}{99}
+\bibitem{berruttrefethen2004} J.-P. Berrut and L. N. Trefethen, Barycentric Lagrange interpolation, \emph{SIAM Review} 46(3):501--517, 2004. doi:10.1137/S0036144502417715
+\bibitem{higham2004} N. J. Higham, The numerical stability of barycentric Lagrange interpolation, \emph{IMA J. Numer. Anal.} 24(4):547--556, 2004. \todo{verify volume and pages}
+\bibitem{ptk2011} R. B. Platte, L. N. Trefethen and A. B. J. Kuijlaars, Impossibility of fast stable approximation of analytic functions from equispaced samples, \emph{SIAM Review} 53(2):308--318, 2011. doi:10.1137/090774707
+\bibitem{boydxu2009} J. P. Boyd and F. Xu, Divergence (Runge phenomenon) for least-squares polynomial approximation on an equispaced grid and Mock--Chebyshev subset interpolation, \emph{Appl. Math. Comput.}, 2009. doi:10.1016/j.amc.2008.12.087 \todo{add volume and pages}
+\bibitem{trefethen2013} L. N. Trefethen, \emph{Approximation Theory and Approximation Practice}, SIAM, 2013 (chapter 15).
+\bibitem{suttonbarto2018} R. S. Sutton and A. G. Barto, \emph{Reinforcement Learning: An Introduction}, 2nd ed., MIT Press, 2018.
+\bibitem{aaa2018} Y. Nakatsukasa, O. S\`ete and L. N. Trefethen, The AAA algorithm for rational approximation, \emph{SIAM J. Sci. Comput.} 40(3):A1494--A1522, 2018. doi:10.1137/16M1106122
+\bibitem{nt2026} Y. Nakatsukasa and L. N. Trefethen, Applications of AAA rational approximation, \emph{Acta Numerica} 35:459--601, 2026. doi:10.1017/S0962492925100263
+\bibitem{gilleswilber2026} M. A. Gilles and H. Wilber, Low-rank approximation by randomly pivoted LU, arXiv:2601.22344, 2026.
+\bibitem{worldbank} World Bank, Population, total (SP.POP.TOTL), World Development Indicators. \url{https://data.worldbank.org/indicator/SP.POP.TOTL}
+\end{thebibliography}
+\end{document}
